@@ -1,0 +1,271 @@
+:root {
+  --bg: #2b2622;
+  --paper: #fdfaf1;
+  --line: #c9d8ee;
+  --margin: #e06a6a;
+  --ink: #1f2a44;
+  --blue: #2d6cdf;
+  --red: #c0392b;
+  --green: #2e9e5b;
+  --yellow: #ffe97a;
+  --board: #2f5d46;
+  --muted: #6b7489;
+  --title: 'Permanent Marker', 'Comic Sans MS', cursive;
+  --body: 'Nunito', 'Segoe UI', sans-serif;
+  --hand: 'Caveat', 'Comic Sans MS', cursive;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  overflow: hidden;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ---------- Surcouche des énigmes : une page de cahier ---------- */
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 12, 25, 0.55);
+  z-index: 10;
+}
+
+#overlay.open {
+  display: flex;
+}
+
+.dialog {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 26px 28px 22px 64px;
+  color: var(--ink);
+  /* lignes bleues + marge rouge du cahier */
+  background:
+    linear-gradient(90deg, transparent 46px, var(--margin) 46px, var(--margin) 48px, transparent 48px),
+    repeating-linear-gradient(180deg, var(--paper) 0 31px, var(--line) 31px 32px);
+  background-color: var(--paper);
+  border-radius: 4px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  animation: dialog-in 0.18s ease-out;
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+.dialog h2 {
+  margin: 0 0 12px;
+  font-family: var(--title);
+  font-weight: 400;
+  font-size: 1.6rem;
+  color: var(--blue);
+}
+
+.dialog p,
+.dialog li {
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+
+.dialog strong {
+  color: var(--red);
+}
+
+/* Code : écrit à la craie sur un petit tableau */
+.dialog pre {
+  background: var(--board);
+  color: #f3f1e7;
+  padding: 14px 16px;
+  border: 6px solid #6b4a2c;
+  border-radius: 3px;
+  overflow-x: auto;
+  font-size: 0.95rem;
+}
+
+.dialog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.dialog th {
+  text-align: left;
+  font-weight: 800;
+  color: var(--blue);
+  border-bottom: 2px solid var(--blue);
+  padding: 6px 8px;
+}
+
+.dialog td {
+  border-bottom: 1px solid var(--line);
+  padding: 6px 8px;
+}
+
+/* Notes manuscrites : post-it jaune */
+.dialog .hand {
+  font-family: var(--hand);
+  font-weight: 600;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 12px 16px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+  transform: rotate(-1.5deg);
+}
+
+.dialog form {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dialog input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-family: var(--hand);
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--blue);
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+}
+
+.dialog input:focus {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.dialog button {
+  padding: 10px 16px;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.dialog button:hover:not(:disabled) {
+  background: var(--yellow);
+}
+
+.dialog button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.dialog button.primary {
+  color: #fff;
+  background: var(--blue);
+}
+
+.dialog button.primary:hover:not(:disabled) {
+  background: #1f56b8;
+}
+
+.dialog button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.dialog button:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.dialog .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dialog .feedback {
+  min-height: 1.4em;
+  margin-top: 10px;
+  font-family: var(--hand);
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.dialog .feedback.error {
+  color: var(--red);
+}
+
+.dialog .feedback.ok {
+  color: var(--green);
+}
+
+/* Boîtier à interrupteurs (Mont Ventoux) */
+.switches {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dialog .switches button[aria-pressed='true'] {
+  color: #fff;
+  background: var(--green);
+}
+
+.lamp {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #cfcfc8;
+  border: 3px solid #8a8a82;
+  margin-left: auto;
+  transition: all 0.2s;
+}
+
+.lamp.on {
+  background: #fff3a0;
+  border-color: #e0a030;
+  box-shadow: 0 0 24px #ffd84d;
+}
+
+/* Commits imprimés (Garlaban) */
+.commits {
+  display: grid;
+  gap: 8px;
+}
+
+.commits button {
+  text-align: left;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.commits button.done {
+  color: #fff;
+  background: var(--green);
+}
