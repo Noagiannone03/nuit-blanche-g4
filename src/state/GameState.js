@@ -19,6 +19,7 @@ function freshData(playerName = '') {
     items: [], // objets / informations récupérés
     guardDone: false,
     guardChoice: null, // 'hide' | 'sneak' | 'caught'
+    guard: null, // ronde du gardien : { phase: 'patrol' | 'away', timer, from, to, progress } ; null avant 03:00
     playerPos: null,
     currentRoom: null,
   };

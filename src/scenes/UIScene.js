@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
-import { openDialog, isDialogOpen } from '../ui/dialog.js';
+import { openDialog, closeDialog, isDialogOpen } from '../ui/dialog.js';
 import { ROOMS } from '../rooms/index.js';
 import { HUB_HINTS } from '../data/hubLayout.js';
 import { CODE_ORDER } from '../puzzles/code.js';
 import { GAME_MIN_PER_SEC, PENALTY_HINT, TOP_BAR } from '../config.js';
 import { C, FONT_HAND, hex, txt } from '../ui/theme.js';
 import { endGame } from './endGame.js';
+import { tickPatrol } from '../state/patrol.js';
 
 const DIGIT_ROOMS = ['ventoux', 'callelongue', 'stevictoire', 'sormiou'];
 const SHORT = { ventoux: 'Ventoux', callelongue: 'Callel.', stevictoire: 'Ste Vic.', sormiou: 'Sormiou' };
@@ -50,6 +51,16 @@ export class UIScene extends Phaser.Scene {
     hintBtn.on('pointerdown', () => this.showHint());
     this.input.keyboard.on('keydown-H', () => this.showHint());
 
+    // bouton pause (touche P ; Échap dans le couloir)
+    const pauseBtn = txt(this, 382, TOP_BAR / 2, '⏸ P', {
+      size: 15, weight: '800', color: 0xffffff, backgroundColor: '#4a3a2c', padding: { x: 8, y: 6 },
+    })
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    pauseBtn.on('pointerdown', () => this.pause());
+    this.input.keyboard.on('keydown-P', () => this.pause());
+    this.paused = false;
+
     this.saveTimer = 0;
     this.lastSignature = null;
     this.refresh = () => this.render();
@@ -77,8 +88,10 @@ export class UIScene extends Phaser.Scene {
   }
 
   update(_, delta) {
+    if (this.paused) return; // le temps et le gardien s'arrêtent pendant la pause
     state.data.realSeconds += delta / 1000;
     state.addMinutes((delta / 1000) * GAME_MIN_PER_SEC);
+    tickPatrol(delta);
 
     // sauvegarde automatique toutes les 5 s
     this.saveTimer += delta;
@@ -116,6 +129,41 @@ export class UIScene extends Phaser.Scene {
       s.tag.setText(SHORT[room]);
     });
     this.orderText.setText(d.orderFound ? '✓ Ordre trouvé\n  code complet' : 'Ordre du code :\n  inconnu').setColor(hex(d.orderFound ? 0x7fe0a0 : 0xd8cbb8));
+  }
+
+  // ---------- Pause ----------
+  pause() {
+    if (this.paused || isDialogOpen()) return;
+    this.paused = true;
+    openDialog({
+      title: 'Pause',
+      body: `<p>Le temps est arrêté (il est <strong>${state.clock}</strong>). Ta partie est sauvegardée automatiquement : tu pourras la reprendre depuis le menu avec « Continuer ».</p>
+        <table><tbody>
+          <tr><td>Se déplacer</td><td>Flèches ou ZQSD, ou clic / toucher</td></tr>
+          <tr><td>Entrer, utiliser</td><td>E ou Entrée · touches 1, 2, 3, 4 dans une salle</td></tr>
+          <tr><td>Indice</td><td>H</td></tr>
+          <tr><td>Revenir au couloir</td><td>Échap (dans une salle)</td></tr>
+          <tr><td>Pause</td><td>P (ou Échap dans le couloir)</td></tr>
+        </tbody></table>`,
+      buttons: [
+        { label: 'Reprendre', primary: true, onClick: (ui) => ui.close() },
+        { label: 'Sauvegarder et quitter', onClick: () => this.quitToMenu() },
+      ],
+      onClose: () => {
+        this.paused = false;
+      },
+    });
+  }
+
+  quitToMenu() {
+    // on retient où était l'élève dans le couloir pour le remettre au même endroit
+    const hub = this.scene.get('Hub');
+    if (this.scene.isActive('Hub') && hub.player) state.data.playerPos = { x: hub.player.x, y: hub.player.y };
+    state.save();
+    closeDialog();
+    const manager = this.game.scene;
+    for (const s of manager.getScenes(true)) manager.stop(s.scene.key);
+    manager.start('Menu');
   }
 
   showHint() {

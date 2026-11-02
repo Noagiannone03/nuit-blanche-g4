@@ -5,6 +5,7 @@ import { ROOMS } from '../rooms/index.js';
 import { ROOM_BLOCKS } from '../data/hubLayout.js';
 import { drawFurniture } from '../art/furniture.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
+import { isPatrolActive } from '../state/patrol.js';
 
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
@@ -32,14 +33,11 @@ export class RoomScene extends Phaser.Scene {
 
     txt(this, 24, 56, def.name, { size: 30, font: FONT_TITLE, color: 0xffffff, shadow: true }).setDepth(750);
     txt(this, 26, 98, def.intro, { size: 16, color: 0xe8e0d0, wordWrap: { width: 620 } }).setDepth(750);
-    txt(this, this.scale.width - 24, 62, def.domain, {
-      size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(this.accent), padding: { x: 10, y: 4 },
+    // étiquette du domaine (verte avec ✓ quand l'énigme est résolue)
+    const solved = state.data.solved[def.key];
+    txt(this, this.scale.width - 24, 62, solved ? `✓ ${def.domain} — résolu` : def.domain, {
+      size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(solved ? C.green : this.accent), padding: { x: 10, y: 4 },
     }).setOrigin(1, 0).setDepth(750);
-    if (state.data.solved[def.key]) {
-      txt(this, this.scale.width - 24, 96, '✓ énigme résolue', { size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(C.green), padding: { x: 10, y: 4 } })
-        .setOrigin(1, 0)
-        .setDepth(750);
-    }
 
     def.objects.forEach((obj, i) => this.drawObject(obj, i));
 
@@ -61,8 +59,22 @@ export class RoomScene extends Phaser.Scene {
     back.on('pointerdown', () => this.leave());
     this.input.keyboard.on('keydown-ESC', () => this.leave());
 
+    // Le gardien continue sa ronde pendant qu'on est dans la salle : on l'entend passer
+    // (dans l'en-tête : en bas de l'écran, il cacherait des indices comme les post-it de Sormiou)
+    this.footsteps = txt(this, this.scale.width - 24, 96, '👣 Le gardien rôde dans le couloir !', {
+      size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(C.red), padding: { x: 10, y: 4 },
+    })
+      .setOrigin(1, 0)
+      .setDepth(900)
+      .setVisible(isPatrolActive());
+    this.tweens.add({ targets: this.footsteps, alpha: 0.45, duration: 600, yoyo: true, repeat: -1 });
+
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     this.scene.bringToTop('UI');
+  }
+
+  update() {
+    this.footsteps.setVisible(isPatrolActive());
   }
 
   // Bandeau du haut, mur, soubassement, sol carrelé, horloge murale

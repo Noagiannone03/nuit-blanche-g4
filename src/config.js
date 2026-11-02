@@ -17,6 +17,11 @@ export const PENALTY_HINT = 15;
 
 // Embranchement : la ronde du gardien
 export const GUARD_TIME = 3 * 60; // à 03:00
+// Après 03:00, le gardien enchaîne les rondes jusqu'au matin (durées en temps réel)
+export const GUARD_SPEED = 85; // px par seconde (le joueur : 190)
+export const PATROL_MS = 40000; // durée d'une ronde
+export const AWAY_MS = 30000; // pause du gardien dans son local entre deux rondes
+export const GUARD_SIGHT = 65; // distance à laquelle il repère le joueur
 export const HIDE_COST = 45; // se cacher fait perdre 45 min…
 export const CAUGHT_COST = 60; // …se faire repérer en coûte 60
 

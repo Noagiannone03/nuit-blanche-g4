@@ -111,7 +111,7 @@ Probabilité (P) et impact (I) de 1 à 3 ; criticité = P × I.
 
 | Ressource | Lien |
 |---|---|
-| Dépôt Git | https://github.com/… |
-| Jeu en ligne | https://….github.io/… |
-| Tableau de tâches | https://… (GitHub Projects / Trello) |
+| Dépôt Git | https://github.com/Noagiannone03/nuit-blanche-g4 |
+| Jeu en ligne | https://noagiannone03.github.io/nuit-blanche-g4/ |
+| Tableau de tâches | https://claude.ai/artifact/DnGsbFg1vjiUiRX156oXvN |
 | Journal de bord | `livrables/00_Journal/journal_de_bord.md` |

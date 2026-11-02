@@ -35,7 +35,7 @@ export class MenuScene extends Phaser.Scene {
       this.input.keyboard.on(`keydown-${e.key}`, () => !isDialogOpen() && e.action());
     });
 
-    txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  Échap : sortir  ·  souris et tactile acceptés', {
+    txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {
       size: 14, color: C.ink, weight: '700',
     }).setOrigin(0.5);
   }

@@ -23,15 +23,43 @@ export const BLOCKED = [
 
 export const EXIT = { x: 22, y: 345 };
 
-// Ronde du gardien : il longe le couloir central
-export const GUARD_PATH = [
-  { x: 880, y: 265 },
-  { x: 120, y: 265 },
-  { x: 120, y: 430 },
-  { x: 880, y: 430 },
+// Ronde du gardien : des points de passage dans le couloir, reliés entre eux.
+// À chaque carrefour, il choisit une direction au hasard (sans faire demi-tour).
+export const GUARD_NODES = {
+  hautGauche: { x: 150, y: 265 },
+  hautMilieu: { x: 420, y: 265 },
+  hautDroite: { x: 610, y: 282 },
+  detente: { x: 750, y: 295 },
+  local: { x: 860, y: 300 }, // le local du gardien, près des casiers
+  basDroite: { x: 860, y: 425 },
+  basMilieu: { x: 610, y: 435 },
+  sormiou: { x: 550, y: 440 },
+  steVictoire: { x: 330, y: 440 },
+  basGauche: { x: 205, y: 430 },
+  callelongue: { x: 190, y: 355 },
+  entree: { x: 70, y: 345 },
+};
+
+export const GUARD_EDGES = [
+  ['hautGauche', 'hautMilieu'],
+  ['hautMilieu', 'hautDroite'],
+  ['hautDroite', 'detente'],
+  ['detente', 'local'],
+  ['local', 'basDroite'],
+  ['basDroite', 'basMilieu'],
+  ['basMilieu', 'sormiou'],
+  ['sormiou', 'steVictoire'],
+  ['steVictoire', 'basGauche'],
+  ['basGauche', 'callelongue'],
+  ['callelongue', 'hautGauche'],
+  ['callelongue', 'entree'],
+  ['hautDroite', 'basMilieu'],
 ];
 
+export const GUARD_OFFICE = 'local';
+
 export const HUB_HINTS = [
-  'La porte de sortie demande un code à 4 chiffres : chacune des 4 salles de cours en cache un.',
-  'L\'ordre des chiffres se trouve au Point repas / Garlaban.',
+  'Les énigmes s\'enchaînent : commence par la salle Sormiou, son casier donne de quoi avancer ailleurs.',
+  'Ordre conseillé : Sormiou → Callelongue → Mont Ventoux → Ste Victoire → Point repas / Garlaban → sortie.',
+  'La porte de sortie demande un code à 4 chiffres : un chiffre par salle de cours, lus dans l\'ordre trouvé à Garlaban.',
 ];

@@ -86,6 +86,17 @@ const DRAWERS = {
     }
   },
 
+  // Vidéoprojecteur posé sur un chariot
+  projector(g, x, y, w, h) {
+    g.fillStyle(0x3a3f47).fillRect(x + 10, y + 34, w - 20, 10);
+    g.fillStyle(0x2a2e34).fillRect(x + 18, y + 44, 8, h - 54).fillRect(x + w - 26, y + 44, 8, h - 54);
+    g.fillStyle(0x2a2e34).fillCircle(x + 22, y + h - 6, 6).fillCircle(x + w - 22, y + h - 6, 6);
+    g.fillStyle(0xe4e6ea).fillRoundedRect(x + w / 2 - 44, y + 4, 88, 30, 5);
+    g.fillStyle(0x30343a).fillCircle(x + w / 2 + 24, y + 19, 10);
+    g.fillStyle(0x7fb3ff).fillCircle(x + w / 2 + 24, y + 19, 5);
+    g.fillStyle(0x3ecf8e).fillCircle(x + w / 2 - 32, y + 12, 2.5);
+  },
+
   printer(g, x, y, w, h) {
     g.fillStyle(0xcfd2d8).fillRoundedRect(x, y + 20, w, h - 20, 6);
     g.fillStyle(0xa9adb5).fillRect(x + 10, y + 34, w - 20, 8);

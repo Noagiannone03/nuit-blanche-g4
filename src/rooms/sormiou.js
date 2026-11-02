@@ -3,7 +3,10 @@ import { openDialog } from '../ui/dialog.js';
 import { POSTITS, POSTIT_COLORS } from '../puzzles/observation.js';
 import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
-import { askAnswer } from './helpers.js';
+import { askAnswer, decorHint } from './helpers.js';
+
+// 1re énigme de la chaîne : rien à apporter. Elle donne le mot de passe du PC de Callelongue.
+const PASSWORD_NOTE = `<p>Collé à l'intérieur de la porte, un post-it :</p><p class="hand">Session Callelongue<br>mdp : <strong>${PC_PASSWORD}</strong></p>`;
 
 export default {
   key: 'sormiou',
@@ -43,7 +46,9 @@ export default {
           body: '<p>Un cadenas à un seul chiffre.</p>',
           answer: ROOM_DIGITS.sormiou,
           placeholder: 'Chiffre',
-          success: `<p>Le casier s'ouvre : une étiquette porte le chiffre <strong>${ROOM_DIGITS.sormiou}</strong>.</p>`,
+          success: `<p>Le casier s'ouvre : une étiquette porte le chiffre <strong>${ROOM_DIGITS.sormiou}</strong>.</p>${PASSWORD_NOTE}`,
+          onSolve: () => state.addItem('mdp-callelongue'),
+          solvedBody: PASSWORD_NOTE,
         });
       },
     },
@@ -52,11 +57,7 @@ export default {
       type: 'keyboardDesk',
       x: 360, y: 450, w: 240, h: 90, color: 0x8a5a35,
       onUse() {
-        state.addItem('password-callelongue');
-        openDialog({
-          title: 'Bureau',
-          body: `<p>En soulevant le clavier, tu trouves un post-it :</p><p class="hand">Session Callelongue<br>mdp : <strong>${PC_PASSWORD}</strong></p>`,
-        });
+        decorHint('sormiou-clavier', 'Bureau', '<p>Sous le clavier, une note :</p><p class="hand">Pour compter, regarde PARTOUT : les murs, le sol, et même près de la plante !</p>');
       },
     },
   ],

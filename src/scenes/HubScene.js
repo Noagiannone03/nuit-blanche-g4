@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
 import { openDialog, isDialogOpen } from '../ui/dialog.js';
-import { WORLD, START, ROOM_BLOCKS, BLOCKED, EXIT, GUARD_PATH } from '../data/hubLayout.js';
+import { WORLD, START, ROOM_BLOCKS, BLOCKED, EXIT } from '../data/hubLayout.js';
 import { EXIT_CODE } from '../puzzles/code.js';
-import { PLAYER_SPEED, PENALTY_ERROR, GUARD_TIME, HIDE_COST, CAUGHT_COST } from '../config.js';
+import { PLAYER_SPEED, PENALTY_ERROR, GUARD_TIME, HIDE_COST, CAUGHT_COST, GUARD_SIGHT } from '../config.js';
 import { animateWalk } from '../art/characters.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
 import { endGame } from './endGame.js';
+import { isPatrolActive, patrolJustStarted, startPatrol, sendGuardAway, guardPosition } from '../state/patrol.js';
 
 const INTERACT_RADIUS = 46;
 
@@ -23,7 +24,7 @@ export class HubScene extends Phaser.Scene {
     this.frozen = false;
     this.target = null;
     this.nearby = null;
-    this.patrol = this.guard = this.torch = null;
+    this.guard = this.torch = null;
     this.cameras.main.setBackgroundColor(0x2b2622);
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.physics.world.setBounds(WORLD.x, WORLD.y, WORLD.width, WORLD.height);
@@ -48,6 +49,25 @@ export class HubScene extends Phaser.Scene {
     // la lampe du téléphone éclaire autour de l'élève
     this.playerLight = addLight(this, pos.x, pos.y, 0xffe9b0, { scale: 1.3, alpha: 0.4 }).setDepth(800);
 
+    // Si le gardien fait sa ronde, il est toujours là en revenant dans le couloir.
+    // Petit délai de grâce pour ne pas être attrapé pendant le fondu d'entrée.
+    this.graceUntil = this.time.now + 800;
+    if (isPatrolActive()) this.spawnGuard();
+    this.onPatrolStarted = () => {
+      this.spawnGuard();
+      this.toast('👣 Le gardien commence une nouvelle ronde !');
+    };
+    this.onPatrolEnded = ({ quiet } = {}) => {
+      this.despawnGuard();
+      if (!quiet) this.toast('Les pas s\'éloignent : le gardien est retourné dans son local… pour l\'instant.');
+    };
+    state.on('patrol-started', this.onPatrolStarted);
+    state.on('patrol-ended', this.onPatrolEnded);
+    this.events.once('shutdown', () => {
+      state.off('patrol-started', this.onPatrolStarted);
+      state.off('patrol-ended', this.onPatrolEnded);
+    });
+
     this.prompt = txt(this, 0, 0, '', { size: 15, weight: '800', color: C.ink, backgroundColor: hex(C.paper), padding: { x: 10, y: 5 } })
       .setOrigin(0.5)
       .setDepth(1000)
@@ -62,6 +82,7 @@ export class HubScene extends Phaser.Scene {
     this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,Z,Q,S,D');
     this.input.keyboard.on('keydown-E', () => this.interact());
     this.input.keyboard.on('keydown-ENTER', () => this.interact());
+    this.input.keyboard.on('keydown-ESC', () => this.scene.get('UI').pause());
     this.input.on('pointerdown', (p) => {
       if (!isDialogOpen()) this.target = { x: p.worldX, y: p.worldY };
     });
@@ -218,6 +239,7 @@ export class HubScene extends Phaser.Scene {
 
   // ---------- Boucle de jeu ----------
   update() {
+    this.updateGuard(); // le gardien bouge même quand une boîte de dialogue est ouverte
     const body = this.player.body;
     if (isDialogOpen() || this.frozen) {
       body.setVelocity(0);
@@ -307,7 +329,7 @@ export class HubScene extends Phaser.Scene {
     state.save();
     openDialog({
       title: '03:00 — Des pas dans le couloir !',
-      body: '<p>Le faisceau d\'une lampe torche balaie le couloir : le gardien fait sa ronde.</p><p>Que fais-tu ?</p>',
+      body: '<p>Le faisceau d\'une lampe torche balaie le couloir : le gardien fait sa ronde. Et il en fera d\'autres jusqu\'au matin…</p><p>Que fais-tu ?</p>',
       closable: false,
       buttons: [
         { label: `Me cacher dans la salle de détente (−${HIDE_COST} min, sans risque)`, onClick: () => this.hide() },
@@ -320,10 +342,10 @@ export class HubScene extends Phaser.Scene {
     state.data.guardChoice = 'hide';
     state.data.freeHints += 1;
     state.addMinutes(HIDE_COST);
-    state.save();
+    sendGuardAway({ quiet: true }); // il saute cette ronde-ci, puis reprend ses rondes plus tard
     openDialog({
       title: 'Salle de détente',
-      body: '<p>Tu attends derrière le canapé que les pas s\'éloignent… Le temps file.</p><p>Sous un coussin, tu trouves le carnet du gardien, plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
+      body: '<p>Tu attends derrière le canapé que les pas s\'éloignent… Le temps file. Le gardien finit sa ronde sans te voir, <strong>mais il reviendra</strong>.</p><p>Sous un coussin, tu trouves le carnet du gardien, plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
     });
   }
 
@@ -332,47 +354,48 @@ export class HubScene extends Phaser.Scene {
     state.save();
     openDialog({
       title: 'Discrétion',
-      body: '<p>Évite le faisceau de la lampe ! Tu peux aussi te réfugier dans une salle.</p>',
+      body: '<p>Évite le faisceau de sa lampe ! Il se promène au hasard dans tout le couloir, fait une pause dans son local, puis repart. Se réfugier dans une salle ne fait que gagner du temps : il sera peut-être juste devant la porte en sortant.</p>',
       buttons: [{ label: 'C\'est parti', primary: true, onClick: (ui) => ui.close() }],
       closable: false,
-      onClose: () => this.startPatrol(),
+      onClose: () => startPatrol(),
     });
   }
 
-  startPatrol() {
-    const start = GUARD_PATH[0];
-    this.torch = addLight(this, start.x, start.y, 0xfff1c0, { scale: 0.75, alpha: 0.6 }).setDepth(800);
-    this.guard = this.add.sprite(start.x, start.y, 'guard', 'side0');
-
-    const path = new Phaser.Curves.Path(start.x, start.y);
-    for (const p of GUARD_PATH.slice(1)) path.lineTo(p.x, p.y);
-    this.patrolT = { t: 0 };
-    this.patrol = this.tweens.add({
-      targets: this.patrolT,
-      t: 1,
-      duration: 18000,
-      onUpdate: () => {
-        const p = path.getPoint(this.patrolT.t);
-        animateWalk(this.guard, 'guard', p.x - this.guard.x, p.y - this.guard.y);
-        this.guard.setPosition(p.x, p.y).setDepth(p.y);
-        this.torch.setPosition(p.x, p.y);
-        if (!isDialogOpen() && Phaser.Math.Distance.Between(p.x, p.y, this.player.x, this.player.y) < 70) this.caught();
-      },
-      onComplete: () => {
-        this.endPatrol();
-        openDialog({ title: 'Ouf…', body: '<p>Les pas s\'éloignent. Le gardien est reparti dans son local.</p>' });
-      },
-    });
+  spawnGuard() {
+    if (this.guard) return;
+    const p = guardPosition();
+    this.torch = addLight(this, p.x, p.y, 0xfff1c0, { scale: 0.75, alpha: 0.6 }).setDepth(800);
+    this.guard = this.add.sprite(p.x, p.y, 'guard', 'side0').setDepth(p.y);
   }
 
-  endPatrol() {
-    this.patrol?.stop();
+  /** Petit message en haut du couloir qui disparaît tout seul (n'interrompt pas le jeu). */
+  toast(message) {
+    this.toastText?.destroy();
+    const t = txt(this, WORLD.width / 2, WORLD.y + 18, message, {
+      size: 15, weight: '800', color: 0xffffff, backgroundColor: hex(C.red), padding: { x: 12, y: 6 },
+    }).setOrigin(0.5, 0).setDepth(1001);
+    this.toastText = t;
+    this.tweens.add({ targets: t, alpha: 0, delay: 2800, duration: 500, onComplete: () => t.destroy() });
+  }
+
+  despawnGuard() {
     this.guard?.destroy();
     this.torch?.destroy();
+    this.guard = this.torch = null;
+  }
+
+  updateGuard() {
+    if (!this.guard) return;
+    const p = guardPosition();
+    animateWalk(this.guard, 'guard', p.x - this.guard.x, p.y - this.guard.y);
+    this.guard.setPosition(p.x, p.y).setDepth(p.y);
+    this.torch.setPosition(p.x, p.y);
+    const close = Phaser.Math.Distance.Between(p.x, p.y, this.player.x, this.player.y) < GUARD_SIGHT;
+    if (close && !this.frozen && !patrolJustStarted() && this.time.now > this.graceUntil) this.caught();
   }
 
   caught() {
-    this.endPatrol();
+    sendGuardAway({ quiet: true }); // satisfait, il retourne dans son local avant la prochaine ronde
     state.data.guardChoice = 'caught';
     state.addMinutes(CAUGHT_COST);
     this.player.setPosition(START.x, START.y);
@@ -381,7 +404,7 @@ export class HubScene extends Phaser.Scene {
     this.cameras.main.flash(300, 255, 240, 200);
     openDialog({
       title: 'Repéré !',
-      body: `<p>« Qui est là ?! » Tu cours te cacher près de l'entrée et attends que le gardien abandonne ses recherches.</p><p><strong>+${CAUGHT_COST} min.</strong></p>`,
+      body: `<p>« Qui est là ?! » Tu cours te cacher près de l'entrée et attends que le gardien abandonne ses recherches. Il reprendra ses rondes plus tard.</p><p><strong>+${CAUGHT_COST} min.</strong></p>`,
     });
   }
 }

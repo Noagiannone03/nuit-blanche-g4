@@ -5,6 +5,10 @@ import { ROOM_DIGITS } from '../puzzles/code.js';
 import { PENALTY_ERROR } from '../config.js';
 import { askAnswer, decorHint } from './helpers.js';
 
+// 2e énigme : il faut le mot de passe trouvé dans le casier de Sormiou.
+// Elle donne la clé de l'armoire électrique de l'amphi Mont Ventoux.
+const KEY_TEXT = '<p>L\'imprimante se réveille et crache une feuille. Scotchée dessous, une petite clé avec une étiquette :</p><p class="hand">ARMOIRE ÉLECTRIQUE — AMPHI MONT VENTOUX</p>';
+
 function openProgram() {
   askAnswer({
     roomKey: 'callelongue',
@@ -12,7 +16,8 @@ function openProgram() {
     body: `<p>Le dernier fichier ouvert. Le bouton « Exécuter » est cassé : à toi de jouer le rôle de l'ordinateur.</p><pre>${PSEUDO_CODE}</pre><p>Qu'affiche ce programme ?</p>`,
     answer: ROOM_DIGITS.callelongue,
     placeholder: 'Valeur affichée',
-    success: `<p>Le terminal affiche <strong>${ROOM_DIGITS.callelongue}</strong> puis : <em>« Bravo, tu ferais un bon compilateur. »</em></p>`,
+    success: `<p>Le terminal affiche <strong>${ROOM_DIGITS.callelongue}</strong> puis : <em>« Bravo, tu ferais un bon compilateur. »</em></p>${KEY_TEXT}`,
+    onSolve: () => state.addItem('cle-armoire'),
   });
 }
 
@@ -56,7 +61,11 @@ export default {
       type: 'printer',
       x: 180, y: 430, w: 150, h: 100, color: 0xcfd2dc,
       onUse() {
-        decorHint('callelongue-memo', 'Imprimante', '<p>Une feuille oubliée dans le bac :</p><p class="hand">i % 2 == 0 → i est pair.<br>Astuce : fais un tableau avec une colonne i et une colonne x.</p>');
+        if (state.hasItem('cle-armoire')) {
+          openDialog({ title: 'Imprimante', body: `${KEY_TEXT}<p><em>La clé est dans ta poche.</em></p>` });
+        } else {
+          openDialog({ title: 'Imprimante', body: '<p>L\'imprimante est en veille. Elle attend sûrement qu\'un programme se termine sur le PC…</p>' });
+        }
       },
     },
     {
@@ -64,12 +73,16 @@ export default {
       type: 'pcRow',
       x: 780, y: 450, w: 220, h: 110, color: 0x2b2f3a,
       onUse() {
-        openDialog({ title: 'Rangée de PC', body: '<p>Tous éteints. Sur un écran, un post-it : « Le mot de passe est dans la salle d\'à côté… pense aux post-it ! »</p>' });
+        decorHint(
+          'callelongue-astuce',
+          'Rangée de PC',
+          '<p>Sur un écran éteint, un post-it laissé par un ancien :</p><p class="hand">Pour un algo, fais un tableau i | x<br>et remplis une ligne par tour de boucle.<br>Tour 1 : i = 1 (impair) → x = 0 − 1 = −1<br>Tour 2 : i = 2 (pair) → x = −1 + 2 = 1</p>',
+        );
       },
     },
   ],
   hints: [
-    'Le mot de passe du PC est caché dans la salle Sormiou. Fouille les objets du bureau.',
+    'Le mot de passe du PC est rangé dans le casier de la salle Sormiou : il faut d\'abord ouvrir ce casier.',
     'Déroule la boucle : i=1 → x=-1, i=2 → x=1, i=3 → x=0… continue jusqu\'à i=5.',
   ],
 };

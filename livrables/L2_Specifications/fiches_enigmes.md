@@ -9,20 +9,20 @@ Lundi soir, Cercle de projets. Tout le monde est parti. L'élève voulait juste 
 Le joueur part de l'entrée (« Vous êtes ici ») et explore le couloir. Chaque salle contient les traces de **sa propre soirée** : ses post-it à Sormiou, son algorithme à Callelongue, son circuit au tableau de l'amphi, le planning à Ste Victoire, et ses **commits imprimés** sur le frigo du point repas. En recollant les morceaux de sa soirée, il reconstitue le code.
 
 ### Dépendances entre énigmes
+Toutes les salles sont ouvertes dès le début, mais chaque énigme a besoin d'un objet ou d'une information trouvée dans une autre salle. Le joueur doit donc traverser le couloir plusieurs fois, donc risquer de croiser le gardien. La difficulté monte au fil de la chaîne.
 
 ```
-Sormiou ──(mot de passe CERCLE26)──▶ Callelongue
-   │ 6                                  │ 3
-   ▼                                    ▼
-Mont Ventoux ─5─▶  [ chiffres ]  ◀─8─ Ste Victoire
-                       │
-Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
+Sormiou (★)  ──mot de passe CERCLE26──▶  Callelongue (★★)  ──clé de l'armoire──▶  Mont Ventoux (★★)
+   ──durées projetées──▶  Ste Victoire (★★★)  ──clé du frigo──▶  Garlaban (★★)  ──ordre──▶  SORTIE : 3658
 ```
+
+Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'endroit où chercher, sans pénalité.
 
 ### Embranchements
-1. **La ronde du gardien (03:00)**
-   - *Se cacher en salle de détente* → −45 min, mais le carnet du gardien offre un **indice gratuit**.
-   - *Continuer en l'évitant* → mini-jeu de discrétion dans le couloir ; si le joueur est vu : −60 min et retour à l'entrée.
+1. **Les rondes du gardien (à partir de 03:00, jusqu'au matin)** : le gardien marche au hasard dans tout le couloir pendant ~40 s, se repose ~30 s dans son local, puis repart. Ses rondes continuent quand le joueur est dans une salle (un bandeau « le gardien rôde » s'affiche). À sa première apparition, le joueur choisit :
+   - *Se cacher en salle de détente* → −45 min, le gardien saute cette ronde, et le carnet du gardien offre un **indice gratuit**. Il revient ensuite.
+   - *Continuer en l'évitant* → la ronde commence tout de suite.
+   - Repéré : −60 min, retour à l'entrée ; le gardien retourne dans son local avant la ronde suivante.
 2. **La fenêtre de Garlaban** : le joueur peut s'enfuir sans le code → **fin « Évasion ratée »** (l'alarme se déclenche).
 
 ### Fins
@@ -44,8 +44,8 @@ Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
 | **Objets** | Tableau blanc, casier à code, bureau et clavier, 15 post-it de 3 couleurs |
 | **Énoncé** | Le tableau blanc : « On ne garde que les post-it **JAUNES**. Leur nombre ouvre le casier. » |
 | **Solution** | 6 post-it jaunes (2 près de la plante et en bas de l'écran, plus discrets) → **6** |
-| **Récompense** | Chiffre 6 + sous le clavier : mot de passe **CERCLE26** pour Callelongue |
-| **Indice décor** | — (le tableau blanc donne déjà la règle) |
+| **Récompense** | Chiffre 6 + dans le casier : mot de passe **CERCLE26** pour Callelongue |
+| **Indice décor** | Sous le clavier : « regarde PARTOUT : murs, sol, près de la plante » |
 | **Indice 1** | Ne compte que les jaunes, dans toute la salle : murs, bureau, sol. |
 | **Indice 2** | Certains sont près de la plante et presque sous le bureau. |
 | **Erreur** | +20 min |
@@ -58,11 +58,12 @@ Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
 | **Domaine** | Algorithmique / code |
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 2 min |
-| **Prérequis** | Mot de passe trouvé à Sormiou |
+| **Prérequis** | Mot de passe trouvé dans le casier de Sormiou |
 | **Énoncé** | Le PC affiche un pseudo-code ; le bouton « Exécuter » est cassé. Qu'affiche le programme ? |
 | **Programme** | `x ← 0 ; POUR i DE 1 À 5 : SI i pair ALORS x ← x + i SINON x ← x − 1 ; AFFICHER x` |
 | **Solution** | i=1 → −1 ; i=2 → 1 ; i=3 → 0 ; i=4 → 4 ; i=5 → 3 → **3** |
-| **Indice décor** | Imprimante : « i % 2 == 0 → i est pair. Fais un tableau i / x. » |
+| **Récompense** | Chiffre 3 + la clé de l'armoire électrique de l'amphi (sort de l'imprimante) |
+| **Indice décor** | Post-it sur la rangée de PC : « fais un tableau i \| x », avec les deux premiers tours déroulés |
 | **Indice 1** | Le mot de passe est à Sormiou, sous un objet du bureau. |
 | **Indice 2** | Déroulé des trois premiers tours de boucle. |
 | **Erreur** | Mauvais mot de passe ou mauvaise réponse : +20 min |
@@ -75,9 +76,11 @@ Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
 | **Domaine** | Logique |
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 2 min 30 |
+| **Prérequis** | Clé de l'armoire trouvée à Callelongue |
 | **Énoncé** | Le tableau montre un circuit : P1 = A OU B ; P2 = NON(A ET B) ; P3 = NON B ; P4 = C ET P1 ; LAMPE = P2 ET P3 ET P4. Le boîtier a 3 interrupteurs et une étiquette « ABC, lu en binaire ». |
 | **Solution** | P3 ⇒ B = 0 ; P4 ⇒ C = 1 et A = 1 ; ABC = 101₂ = **5** (une seule combinaison possible) |
 | **Interaction** | Les interrupteurs allument vraiment la lampe ; le joueur peut tester |
+| **Récompense** | Chiffre 5 + le courant revient : le vidéoprojecteur affiche les durées des tâches pour Ste Victoire |
 | **Indice décor** | Bureau : « Colonnes 4, 2, 1 : 110 → 6 » |
 | **Indice 1** | Commence par P3 : que doit valoir B ? |
 | **Indice 2** | ABC = 101, convertis en décimal. |
@@ -91,7 +94,9 @@ Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
 | **Domaine** | Conception / gestion de projet |
 | **Difficulté** | ★★★ |
 | **Durée visée** | 2 min 30 |
+| **Prérequis** | Les durées, projetées dans l'amphi Mont Ventoux (sur le mur, la colonne est effacée) |
 | **Énoncé** | « Combien de jours, au minimum, pour livrer le projet du mur ? » |
+| **Récompense** | Chiffre 8 + la clé du frigo de Garlaban |
 | **Données** | A Cadrage 1 j ; B Scénario 3 j (A) ; C Maquettes 2 j (A) ; D Développement 4 j (B, C) ; E Affiches 1 j (C) |
 | **Solution** | Chemin critique A → B → D = 1 + 3 + 4 = **8** (A → C → D = 7 ; A → C → E = 4) |
 | **Indice décor** | Carnet : définition du chemin critique |
@@ -107,7 +112,8 @@ Garlaban ──(ordre)─────┴──▶ PORTE DE SORTIE : 3658
 | **Domaine** | Synthèse (ordre du code) — tri chronologique, Git |
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 1 min 30 |
-| **Énoncé** | 4 commits imprimés sur le frigo, dans le désordre. Les cliquer du plus ancien au plus récent. |
+| **Prérequis** | La clé du frigo, trouvée dans le coffre de Ste Victoire |
+| **Énoncé** | 4 commits imprimés rangés dans le frigo, dans le désordre. Les cliquer du plus ancien au plus récent. |
 | **Solution** | 21:47 Callelongue → 22:30 Sormiou → 23:12 Ventoux → 23:58 Ste Victoire |
 | **Récompense** | L'ordre du code : 3 · 6 · 5 · 8 |
 | **Indice décor** | Micro-ondes : « Le code se lit dans l'ordre où j'ai bossé ce soir. » |

@@ -3,14 +3,19 @@ import { openDialog } from '../ui/dialog.js';
 import { COMMITS, chronologicalRooms } from '../puzzles/ordre.js';
 import { PENALTY_ERROR } from '../config.js';
 import { ROOM_NAMES } from './names.js';
-import { decorHint } from './helpers.js';
+import { decorHint, lockedDialog } from './helpers.js';
 import { endGame } from '../scenes/endGame.js';
 
 function orderSummary() {
   return `<ol>${chronologicalRooms().map((r) => `<li>${ROOM_NAMES[r]}</li>`).join('')}</ol>`;
 }
 
+// 5e énigme : le frigo est fermé par un cadenas ; la clé est dans le coffre de Ste Victoire.
 function openCommits() {
+  if (!state.hasItem('cle-frigo')) {
+    lockedDialog('Frigo', '<p>Les feuilles sont coincées à l\'intérieur du frigo, fermé par un petit cadenas. Une étiquette :</p><p class="hand">Frigo de l\'équipe Évasion — la clé est dans notre coffre !</p>');
+    return;
+  }
   if (state.data.orderFound) {
     openDialog({ title: 'Commits triés', body: `<p>L'ordre du code de sortie :</p>${orderSummary()}` });
     return;
@@ -21,7 +26,7 @@ function openCommits() {
   const list = document.createElement('div');
   list.className = 'commits';
   const ui = openDialog({
-    title: 'Commits imprimés sur le frigo',
+    title: 'Commits imprimés',
     body: list,
   });
   list.insertAdjacentHTML('beforebegin', '<p>Tes commits de la soirée, dans le désordre. Clique-les <strong>du plus ancien au plus récent</strong>.</p>');
@@ -63,10 +68,10 @@ export default {
   name: 'Point repas & Salle de jeux Garlaban',
   domain: 'Ordre du code',
   color: 0x4a3420,
-  intro: 'Ça sent encore la pizza de 20h. Des feuilles sont collées sur le frigo.',
+  intro: 'Ça sent encore la pizza de 20h. On voit des feuilles à l\'intérieur du frigo.',
   objects: [
     {
-      label: 'Frigo (feuilles collées)',
+      label: 'Frigo',
       type: 'fridge',
       x: 220, y: 230, w: 150, h: 200, color: 0xdfe6ea,
       onUse: openCommits,
@@ -101,6 +106,7 @@ export default {
     },
   ],
   hints: [
+    'La clé du frigo est dans le coffre de la salle Ste Victoire.',
     'Les feuilles du frigo sont des commits. Regarde leurs heures.',
     'Le plus ancien commit est celui de 21:47. Les chiffres du code de sortie suivent cet ordre.',
   ],
