@@ -62,7 +62,7 @@ export default {
     },
   ],
   hints: [
-    'Il fait noir : balaie toute la salle avec le flash de ton téléphone (il suit la souris). Ne compte que les post-it jaunes, dans toute la salle : murs, bureau, sol…',
-    'Regarde bien les bords et le bas de l\'écran : certains post-it jaunes sont près de la plante et presque sous le bureau.',
+    'Il fait noir : balaie toute la salle avec le flash de ton téléphone (il suit la souris). Ne compte que les post-it JAUNES — attention, les orange leur ressemblent.',
+    'Il y en a très peu. Regarde les bords de la salle : un près de la plante, un sur le mur de droite.',
   ],
 };

@@ -34,7 +34,7 @@ npm run dev        # puis ouvrir http://localhost:5173
 
 ## 🔑 Solution complète
 
-**Code de sortie : `3658`**
+**Code de sortie : `2358`**
 
 Les énigmes s'enchaînent : toutes les salles sont ouvertes, mais chacune a besoin d'un objet ou d'une information trouvée dans la précédente.
 
@@ -45,12 +45,12 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 
 | Étape | Salle | Domaine | Il faut… | Énigme | Réponse | Ça débloque… |
 |---|---|---|---|---|---|---|
-| 1 | Sormiou | Observation visuelle | rien (dans le noir, au flash du téléphone) | Compter les post-it **jaunes** (règle sur le tableau blanc) et ouvrir le casier (objet 2) | **6** | La clé de l'armoire électrique de l'amphi |
+| 1 | Sormiou | Observation visuelle | rien (dans le noir, au flash du téléphone) | Compter les post-it **jaunes** (règle sur le tableau blanc) parmi 50 post-it de 6 couleurs : un près de la plante, un sur le mur de droite. Ouvrir le casier (objet 2) | **2** | La clé de l'armoire électrique de l'amphi |
 | 2 | Amphi Mont Ventoux | Logique | la clé de l'armoire | Boîtier (objet 2) : interrupteurs **A = 1, B = 0, C = 1** → la lampe s'allume ; 101 en binaire = 5 | **5** | Le courant revient partout (plus besoin du flash) ; le vidéoprojecteur (objet 4) affiche le mot de passe `CERCLE26`. **Le gardien commence ses rondes.** |
-| 3 | Callelongue | Algorithmique / code | le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : x = −1, 1, 0, 4, 3 | **3** | L'imprimante sort les durées des tâches |
+| 3 | Callelongue | Algorithmique / code | le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : 3 → 5 → (5 ≤ 6 donc × 2) 10 → 10 − 4 = 6 → (pair donc / 2) 3 | **3** | L'imprimante sort les durées des tâches |
 | 4 | Ste Victoire | Gestion de projet | les durées | Planning (objet 1) puis coffre (objet 2) : chemin critique A(1) → B(3) → D(4) = 8 jours | **8** | La clé du frigo |
-| 5 | Point repas / Garlaban | Ordre du code | la clé du frigo | Frigo (objet 1) : cliquer les commits du plus ancien au plus récent : 21:47, 22:30, 23:12, 23:58 | Callelongue, Sormiou, Ventoux, Ste Victoire | L'ordre du code |
-| Fin | Porte de sortie (couloir, à gauche) | — | les 4 chiffres + l'ordre | Chiffres dans l'ordre : 3 · 6 · 5 · 8 | **3658** | L'évasion |
+| 5 | Point repas / Garlaban | Ordre du code | la clé du frigo | Frigo (objet 1) : cliquer les commits du plus ancien au plus récent : 21:47, 22:30, 23:12, 23:58 | Sormiou, Callelongue, Ventoux, Ste Victoire | L'ordre du code |
+| Fin | Porte de sortie (couloir, à gauche) | — | les 4 chiffres + l'ordre | Chiffres dans l'ordre : 2 · 3 · 5 · 8 | **2358** | L'évasion |
 
 **Parcours de la partie parfaite :** Sormiou → Mont Ventoux → Callelongue → Ste Victoire → Garlaban → Sortie.
 

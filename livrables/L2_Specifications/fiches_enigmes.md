@@ -13,7 +13,7 @@ Toutes les salles sont ouvertes dès le début, mais chaque énigme a besoin d'u
 
 ```
 Sormiou (★, dans le noir)  ──clé de l'armoire──▶  Mont Ventoux (★★, courant + gardien)  ──mot de passe CERCLE26──▶  Callelongue (★★)
-   ──durées imprimées──▶  Ste Victoire (★★★)  ──clé du frigo──▶  Garlaban (★★)  ──ordre──▶  SORTIE : 3658
+   ──durées imprimées──▶  Ste Victoire (★★★)  ──clé du frigo──▶  Garlaban (★★)  ──ordre──▶  SORTIE : 2358
 ```
 
 Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'endroit où chercher, sans pénalité.
@@ -26,7 +26,7 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 ### Fins
 | Fin | Condition | Résultat |
 |---|---|---|
-| Évasion réussie | Code 3658 à la porte de sortie | Victoire, score et classement |
+| Évasion réussie | Code 2358 à la porte de sortie | Victoire, score et classement |
 | Évasion ratée | Sauter par la fenêtre | Échec |
 | Attrapé | Entrer dans le cercle de la lampe du gardien | Échec |
 | Game over | L'horloge atteint 09:00 | Échec |
@@ -41,13 +41,13 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Difficulté** | ★☆☆ (énigme d'entrée) |
 | **Durée visée (partie parfaite)** | 1 min 30 |
 | **Contrainte** | Salle dans le noir : il faut balayer la salle avec le flash du téléphone (il suit la souris) |
-| **Objets** | Tableau blanc, casier à code, bureau et clavier, 15 post-it de 3 couleurs |
+| **Objets** | Tableau blanc, casier à code, bureau et clavier, 50 post-it de 6 couleurs (jaune, orange, rose, bleu, vert, violet) |
 | **Énoncé** | Le tableau blanc : « On ne garde que les post-it **JAUNES**. Leur nombre ouvre le casier. » |
-| **Solution** | 6 post-it jaunes (2 près de la plante et en bas de l'écran, plus discrets) → **6** |
-| **Récompense** | Chiffre 6 + dans le casier : la clé de l'armoire électrique de l'amphi Mont Ventoux |
+| **Solution** | Seulement 2 post-it jaunes, perdus parmi 48 leurres (les orange leur ressemblent) : un près de la plante, un sur le mur de droite → **2** |
+| **Récompense** | Chiffre 2 + dans le casier : la clé de l'armoire électrique de l'amphi Mont Ventoux |
 | **Indice décor** | Sous le clavier : « regarde PARTOUT : murs, sol, près de la plante » |
-| **Indice 1** | Ne compte que les jaunes, dans toute la salle : murs, bureau, sol. |
-| **Indice 2** | Certains sont près de la plante et presque sous le bureau. |
+| **Indice 1** | Balaie toute la salle au flash ; ne compte que les JAUNES (attention aux orange). |
+| **Indice 2** | Il y en a très peu : un près de la plante, un sur le mur de droite. |
 | **Erreur** | +20 min |
 | **Code** | `src/puzzles/observation.js`, `src/rooms/sormiou.js` |
 
@@ -78,12 +78,12 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Durée visée** | 2 min |
 | **Prérequis** | Mot de passe projeté dans l'amphi Mont Ventoux (une fois le courant rétabli) |
 | **Énoncé** | Le PC affiche un pseudo-code ; le bouton « Exécuter » est cassé. Qu'affiche le programme ? |
-| **Programme** | `x ← 0 ; POUR i DE 1 À 5 : SI i pair ALORS x ← x + i SINON x ← x − 1 ; AFFICHER x` |
-| **Solution** | i=1 → −1 ; i=2 → 1 ; i=3 → 0 ; i=4 → 4 ; i=5 → 3 → **3** |
+| **Programme** | `nombre ← 3 ; nombre ← nombre + 2 ; SI nombre > 6 ALORS nombre ← nombre − 3 SINON nombre ← nombre × 2 ; nombre ← nombre − 4 ; SI nombre est pair ALORS nombre ← nombre / 2 SINON nombre ← nombre + 1 ; AFFICHER nombre` |
+| **Solution** | 3 → 5 → 5 n'est pas > 6, donc SINON : 10 → 10 − 4 = 6 → 6 est pair : 6 / 2 = **3** |
 | **Récompense** | Chiffre 3 + l'imprimante sort les durées des tâches pour Ste Victoire |
-| **Indice décor** | Post-it sur la rangée de PC : « fais un tableau i \| x », avec les deux premiers tours déroulés |
+| **Indice décor** | Post-it sur la rangée de PC : « écris la valeur de nombre après chaque ligne ; un SI n'exécute qu'une branche », avec les deux premières lignes déroulées |
 | **Indice 1** | Le mot de passe est projeté dans l'amphi Mont Ventoux, une fois le courant rétabli. |
-| **Indice 2** | Déroulé des trois premiers tours de boucle. |
+| **Indice 2** | 3, puis 5 ; 5 n'est pas > 6, donc SINON : 10… |
 | **Erreur** | Mauvais mot de passe ou mauvaise réponse : +20 min |
 | **Code** | `src/puzzles/algorithmique.js`, `src/rooms/callelongue.js` |
 
@@ -114,8 +114,8 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Durée visée** | 1 min 30 |
 | **Prérequis** | La clé du frigo, trouvée dans le coffre de Ste Victoire |
 | **Énoncé** | 4 commits imprimés rangés dans le frigo, dans le désordre. Les cliquer du plus ancien au plus récent. |
-| **Solution** | 21:47 Callelongue → 22:30 Sormiou → 23:12 Ventoux → 23:58 Ste Victoire |
-| **Récompense** | L'ordre du code : 3 · 6 · 5 · 8 |
+| **Solution** | 21:47 Sormiou → 22:30 Callelongue → 23:12 Ventoux → 23:58 Ste Victoire |
+| **Récompense** | L'ordre du code : 2 · 3 · 5 · 8 |
 | **Indice décor** | Micro-ondes : « Le code se lit dans l'ordre où j'ai bossé ce soir. » |
 | **Indice 1** | Les feuilles sont des commits : regarde leurs heures. |
 | **Indice 2** | Le plus ancien est celui de 21:47. |
@@ -125,7 +125,7 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 
 ## Finale — Porte de sortie
 
-Code **3658**. Mauvais code : +20 min et l'écran tremble.
+Code **2358**. Mauvais code : +20 min et l'écran tremble.
 
 ---
 

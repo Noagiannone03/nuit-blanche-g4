@@ -79,13 +79,13 @@ export default {
         decorHint(
           'callelongue-astuce',
           'Rangée de PC',
-          '<p>Sur un écran éteint, un post-it laissé par un ancien :</p><p class="hand">Pour un algo, fais un tableau i | x<br>et remplis une ligne par tour de boucle.<br>Tour 1 : i = 1 (impair) → x = 0 − 1 = −1<br>Tour 2 : i = 2 (pair) → x = −1 + 2 = 1</p>',
+          '<p>Sur un écran éteint, un post-it laissé par un ancien :</p><p class="hand">Pour un algo, écris la valeur de « nombre » après chaque ligne.<br>Un SI n\'exécute qu\'UNE des deux branches.<br>Ligne 1 : nombre = 3<br>Ligne 2 : nombre = 3 + 2 = 5</p>',
         );
       },
     },
   ],
   hints: [
     'Le mot de passe du PC est projeté dans l\'amphi Mont Ventoux : il faut d\'abord y rétablir le courant.',
-    'Déroule la boucle : i=1 → x=-1, i=2 → x=1, i=3 → x=0… continue jusqu\'à i=5.',
+    'Note la valeur de nombre après chaque ligne : 3, puis 5. 5 n\'est pas plus grand que 6 : on fait le SINON, nombre vaut 10. Continue…',
   ],
 };
