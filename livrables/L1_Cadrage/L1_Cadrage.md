@@ -17,7 +17,7 @@ Pendant le Cercle de projets, un élève s'endort sur son clavier. Il se réveil
 ### Pourquoi ce choix
 - **Un univers que le jury connaît** : le jeu reprend le vrai plan du campus (Amphi Mont Ventoux, Callelongue, Ste Victoire, Sormiou, Garlaban). Le joueur parcourt l'école dans laquelle il travaille.
 - **Des énigmes métier crédibles** : dans une école d'informatique, résoudre un circuit logique, dérouler un algorithme ou calculer un chemin critique est naturel. Chaque salle correspond à un domaine.
-- **Un clin d'œil au Cercle de projets** : les indices sont les traces laissées par l'élève (ses commits, ses post-it, le planning de son projet).
+- **Un clin d'œil au Cercle de projets** : les indices sont les traces laissées par l'élève (ses post-it, ses programmes, le planning de son projet).
 
 ### Expérience visée
 - Une partie parfaite de **8 à 15 minutes** ; une partie « normale » de 15 à 20 minutes, avec un peu de stress en fin de partie.

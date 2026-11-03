@@ -3,7 +3,7 @@ import { solveLogic } from './logique.js';
 import { runProgram } from './algorithmique.js';
 import { criticalPathLength } from './planning.js';
 import { solveObservation } from './observation.js';
-import { chronologicalRooms } from './ordre.js';
+import { servingOrder } from './ordre.js';
 
 export const ROOM_DIGITS = {
   ventoux: solveLogic(),
@@ -12,6 +12,6 @@ export const ROOM_DIGITS = {
   sormiou: solveObservation(),
 };
 
-export const CODE_ORDER = chronologicalRooms();
+export const CODE_ORDER = servingOrder(ROOM_DIGITS);
 
 export const EXIT_CODE = CODE_ORDER.map((room) => ROOM_DIGITS[room]).join('');

@@ -6,7 +6,7 @@
 Lundi soir, Cercle de projets. Tout le monde est parti. L'élève voulait juste finir « un dernier commit »… Il se réveille la tête sur le clavier : **00:00**. Les portes sont verrouillées et la sortie demande un **code à 4 chiffres**. À **9h00**, l'école ouvre : s'il est encore là, il se fait attraper.
 
 ### Fil narratif
-Le joueur part de l'entrée (« Vous êtes ici ») et explore le couloir. Chaque salle contient les traces de **sa propre soirée** : ses post-it à Sormiou, son algorithme à Callelongue, son circuit au tableau de l'amphi, le planning à Ste Victoire, et ses **commits imprimés** sur le frigo du point repas. En recollant les morceaux de sa soirée, il reconstitue le code.
+Le joueur part de l'entrée (« Vous êtes ici ») et explore le couloir. Chaque salle contient les traces de **sa propre soirée** : ses post-it à Sormiou, son algorithme à Callelongue, son circuit au tableau de l'amphi, le planning à Ste Victoire, et le mot de sa mère sur le frigo du point repas. En recollant les morceaux de sa soirée, il reconstitue le code.
 
 ### Dépendances entre énigmes
 Toutes les salles sont ouvertes dès le début, mais chaque énigme a besoin d'un objet ou d'une information trouvée dans une autre salle. Le joueur doit donc traverser le couloir plusieurs fois, donc risquer de croiser le gardien. La difficulté monte au fil de la chaîne.
@@ -59,14 +59,15 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 2 min 30 |
 | **Prérequis** | Clé de l'armoire trouvée dans le casier de Sormiou |
-| **Énoncé** | Le tableau montre un circuit : P1 = A OU B ; P2 = NON(A ET B) ; P3 = NON B ; P4 = C ET P1 ; LAMPE = P2 ET P3 ET P4. Le boîtier a 3 interrupteurs et une étiquette « ABC, lu en binaire ». |
+| **Énoncé** | Le tableau montre un circuit : P1 = A OU B ; P2 = NON(A ET B) ; P3 = NON B ; P4 = C ET P1 ; LAMPE = P2 ET P3 ET P4, avec l'objectif écrit en dessous : « LAMPE = 1 → la lampe s'allume ». Le boîtier a 3 interrupteurs et une étiquette « ABC, lu en binaire ». |
 | **Solution** | P3 ⇒ B = 0 ; P4 ⇒ C = 1 et A = 1 ; ABC = 101₂ = **5** (une seule combinaison possible) |
-| **Interaction** | Les interrupteurs allument vraiment la lampe ; le joueur peut tester |
+| **Interaction** | La lampe ne réagit pas aux interrupteurs : le joueur règle A, B, C puis clique « Tester la lampe ». Bonne combinaison → la lampe s'allume et le chiffre 5 s'affiche ; sinon pénalité |
 | **Récompense** | Chiffre 5 + le courant revient dans toute l'école (fin du noir) ; le vidéoprojecteur affiche le mot de passe du PC de Callelongue. **Le gardien est alerté et commence ses rondes.** |
 | **Indice décor** | Bureau : « Colonnes 4, 2, 1 : 110 → 6 » |
-| **Indice 1** | Commence par P3 : que doit valoir B ? |
-| **Indice 2** | ABC = 101, convertis en décimal. |
-| **Erreur** | +20 min |
+| **Indice 1** | La clé est dans le casier de Sormiou. |
+| **Indice 2** | Objectif LAMPE = 1 : P2, P3, P4 valent 1. Commence par P3 : que doit valoir B ? |
+| **Indice 3** | A = 1, B = 0, C = 1, puis tester la lampe. |
+| **Erreur** | Chaque test raté : +20 min |
 | **Code** | `src/puzzles/logique.js`, `src/rooms/ventoux.js` |
 
 ## Fiche 3 — Callelongue : le programme
@@ -105,21 +106,24 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Erreur** | +20 min |
 | **Code** | `src/puzzles/planning.js`, `src/rooms/stevictoire.js` |
 
-## Fiche 5 — Point repas & Garlaban : les commits
+## Fiche 5 — Point repas & Garlaban : le repas
 
 | | |
 |---|---|
-| **Domaine** | Synthèse (ordre du code) — tri chronologique, Git |
+| **Domaine** | Synthèse (ordre du code) — logique et déduction |
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 1 min 30 |
-| **Prérequis** | La clé du frigo, trouvée dans le coffre de Ste Victoire |
-| **Énoncé** | 4 commits imprimés rangés dans le frigo, dans le désordre. Les cliquer du plus ancien au plus récent. |
-| **Solution** | 21:47 Sormiou → 22:30 Callelongue → 23:12 Ventoux → 23:58 Ste Victoire |
-| **Récompense** | L'ordre du code : 2 · 3 · 5 · 8 |
-| **Indice décor** | Micro-ondes : « Le code se lit dans l'ordre où j'ai bossé ce soir. » |
-| **Indice 1** | Les feuilles sont des commits : regarde leurs heures. |
-| **Indice 2** | Le plus ancien est celui de 21:47. |
-| **Erreur** | Mauvais clic : on recommence le tri, +20 min |
+| **Prérequis** | La clé du frigo, trouvée dans le coffre de Ste Victoire ; les 4 chiffres des autres salles |
+| **Énoncé** | Mot sur le frigo : « C'est l'heure de manger ! La mère sert ses enfants toujours dans le même ordre. La plus jeune des filles est servie en premier. Le deuxième servi est le plus jeune garçon : il s'assoit toujours à côté de son grand frère et d'une de ses sœurs. L'enfant le plus vieux est toujours servi en dernier. » Les enfants sont les nombres 5 / 2 / 8 / 3 trouvés dans les autres salles. |
+| **Règle cachée** | Nombre = âge ; pair = fille (XX, nombre pair de X), impair = garçon (XY) |
+| **Solution** | Filles 2 et 8, garçons 3 et 5. 2 (plus jeune fille) → 3 (plus jeune garçon, entre son grand frère 5 et sa sœur 2) → 5 → 8 (le plus vieux) = **2358** |
+| **Récompense** | L'ordre du code : Sormiou, Callelongue, Ventoux, Ste Victoire |
+| **Indice décor** | Micro-ondes, magnet de SVT : « Les hommes ont XY, les femmes XX : les chromosomes féminins ont un nombre pair de X ! » |
+| **Indice 1** | La clé du frigo est dans le coffre de Ste Victoire. |
+| **Indice 2** | Pairs = filles, impairs = garçons ; plus le nombre est grand, plus l'enfant est vieux. |
+| **Indice 3** | Le 8 est servi en dernier, le 3 en deuxième. |
+| **Erreur** | +20 min |
+| **Note de conception** | La règle « la plus jeune des filles est servie en premier » a été ajoutée : sans elle, 2358 et 5328 marchaient tous les deux. Le code vérifie qu'il n'existe qu'une seule solution (`servingOrder` dans `src/puzzles/ordre.js`). |
 | **Piège** | Fenêtre entrouverte → fin « Évasion ratée » |
 | **Code** | `src/puzzles/ordre.js`, `src/rooms/garlaban.js` |
 

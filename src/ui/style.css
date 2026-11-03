@@ -252,20 +252,3 @@ body {
   box-shadow: 0 0 24px #ffd84d;
 }
 
-/* Commits imprimés (Garlaban) */
-.commits {
-  display: grid;
-  gap: 8px;
-}
-
-.commits button {
-  text-align: left;
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-weight: 400;
-  font-size: 0.85rem;
-}
-
-.commits button.done {
-  color: #fff;
-  background: var(--green);
-}
