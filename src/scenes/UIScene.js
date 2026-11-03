@@ -8,6 +8,7 @@ import { GAME_MIN_PER_SEC, PENALTY_HINT, TOP_BAR } from '../config.js';
 import { C, FONT_HAND, hex, txt } from '../ui/theme.js';
 import { endGame } from './endGame.js';
 import { tickPatrol } from '../state/patrol.js';
+import { sfx, toggleMute, isMuted } from '../audio/sound.js';
 
 const DIGIT_ROOMS = ['ventoux', 'callelongue', 'stevictoire', 'sormiou'];
 const SHORT = { ventoux: 'Ventoux', callelongue: 'Callel.', stevictoire: 'Ste Vic.', sormiou: 'Sormiou' };
@@ -64,7 +65,10 @@ export class UIScene extends Phaser.Scene {
     this.saveTimer = 0;
     this.lastSignature = null;
     this.refresh = () => this.render();
-    this.onPenalty = () => this.cameras.main.flash(250, 220, 40, 40);
+    this.onPenalty = () => {
+      sfx.error();
+      this.cameras.main.flash(250, 220, 40, 40);
+    };
     state.on('changed', this.refresh);
     state.on('penalty', this.onPenalty);
     this.events.once('shutdown', () => {
@@ -144,9 +148,16 @@ export class UIScene extends Phaser.Scene {
           <tr><td>Indice</td><td>H</td></tr>
           <tr><td>Revenir au couloir</td><td>Échap (dans une salle)</td></tr>
           <tr><td>Pause</td><td>P (ou Échap dans le couloir)</td></tr>
+          <tr><td>Couper / remettre le son</td><td>M</td></tr>
         </tbody></table>`,
       buttons: [
         { label: 'Reprendre', primary: true, onClick: (ui) => ui.close() },
+        {
+          label: isMuted() ? '🔇 Son coupé' : '🔊 Son activé',
+          onClick: (ui) => {
+            ui.box.querySelectorAll('.actions button')[1].textContent = toggleMute() ? '🔇 Son coupé' : '🔊 Son activé';
+          },
+        },
         { label: 'Sauvegarder et quitter', onClick: () => this.quitToMenu() },
       ],
       onClose: () => {
@@ -189,6 +200,7 @@ export class UIScene extends Phaser.Scene {
           primary: true,
           onClick: () => {
             const h = state.useHint(roomKey || 'hub', hints);
+            sfx.hint();
             openDialog({ title: `Indice ${seen + 1}`, body: `<p>${h.text}</p>` });
           },
         },

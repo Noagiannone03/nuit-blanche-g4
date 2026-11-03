@@ -8,6 +8,7 @@ import { animateWalk } from '../art/characters.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
 import { endGame } from './endGame.js';
 import { isPatrolActive, patrolJustStarted, guardPosition } from '../state/patrol.js';
+import { sfx, setAmbience } from '../audio/sound.js';
 
 const INTERACT_RADIUS = 46;
 
@@ -25,6 +26,9 @@ export class HubScene extends Phaser.Scene {
     this.target = null;
     this.nearby = null;
     this.guard = this.torch = this.beam = null;
+    this.stepTimer = this.guardStepTimer = this.heartTimer = 0;
+    this.stepLeft = false;
+    setAmbience('hub');
     this.cameras.main.setBackgroundColor(0x2b2622);
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.physics.world.setBounds(WORLD.x, WORLD.y, WORLD.width, WORLD.height);
@@ -55,6 +59,7 @@ export class HubScene extends Phaser.Scene {
     if (isPatrolActive()) this.spawnGuard();
     this.onPatrolStarted = () => {
       this.spawnGuard();
+      sfx.distantSlam();
       this.toast('👣 Le gardien commence une nouvelle ronde !');
     };
     this.onPatrolEnded = ({ quiet } = {}) => {
@@ -240,10 +245,10 @@ export class HubScene extends Phaser.Scene {
   }
 
   // ---------- Boucle de jeu ----------
-  update() {
+  update(_, delta) {
     // figé = on quitte le couloir (entrée dans une salle, fin de partie) : la scène va s'arrêter
     if (this.frozen) return;
-    this.updateGuard(); // le gardien bouge même quand une boîte de dialogue est ouverte
+    this.updateGuard(delta); // le gardien bouge même quand une boîte de dialogue est ouverte
     const body = this.player.body;
     if (isDialogOpen()) {
       body.setVelocity(0);
@@ -268,6 +273,15 @@ export class HubScene extends Phaser.Scene {
     body.setVelocity(v.x, v.y);
     animateWalk(this.player, 'player', v.x, v.y);
     this.player.setDepth(this.player.y);
+    // bruit de pas, un pied après l'autre
+    if (vx || vy) {
+      this.stepTimer += delta;
+      if (this.stepTimer > 260) {
+        this.stepTimer = 0;
+        this.stepLeft = !this.stepLeft;
+        sfx.step(this.stepLeft);
+      }
+    }
     this.playerLight.setPosition(this.player.x, this.player.y + 8);
 
     this.updatePrompt();
@@ -296,6 +310,7 @@ export class HubScene extends Phaser.Scene {
     state.data.playerPos = { x: this.player.x, y: this.player.y };
     state.save();
     this.freeze();
+    sfx.door();
     this.cameras.main.fadeOut(220, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Room', { roomKey: room.key }));
   }
@@ -324,6 +339,7 @@ export class HubScene extends Phaser.Scene {
       input: { placeholder: '_ _ _ _', maxLength: 4, numeric: true },
       submitLabel: 'Composer',
       onSubmit: (value, ui) => {
+        [...value].forEach((_, i) => sfx.beep(i));
         if (value === EXIT_CODE) {
           endGame(this, true, 'escaped');
         } else {
@@ -342,7 +358,8 @@ export class HubScene extends Phaser.Scene {
     // halo de la lampe torche + zone de repérage visible : y entrer, c'est perdu
     this.torch = addLight(this, p.x, p.y, 0xfff1c0, { scale: (GUARD_SIGHT * 2.6) / 256, alpha: 0.7 }).setDepth(800);
     this.beam = this.add.circle(p.x, p.y, GUARD_SIGHT, 0xfff1c0, 0.1).setStrokeStyle(2, 0xfff1c0, 0.35).setDepth(799);
-    this.guard = this.add.sprite(p.x, p.y, 'guard', 'side0').setDepth(p.y);
+    // dessiné au-dessus de sa lampe (profondeur 800) pour ne pas être délavé par la lumière
+    this.guard = this.add.sprite(p.x, p.y, 'guard', 'down0').setDepth(810);
   }
 
   /** Petit message en haut du couloir qui disparaît tout seul (n'interrompt pas le jeu). */
@@ -362,15 +379,38 @@ export class HubScene extends Phaser.Scene {
     this.guard = this.torch = this.beam = null;
   }
 
-  updateGuard() {
+  updateGuard(delta) {
     if (!this.guard) return;
     const p = guardPosition();
-    animateWalk(this.guard, 'guard', p.x - this.guard.x, p.y - this.guard.y);
-    this.guard.setPosition(p.x, p.y).setDepth(p.y);
+    const moving = p.x !== this.guard.x || p.y !== this.guard.y;
+    const dist = Phaser.Math.Distance.Between(p.x, p.y, this.player.x, this.player.y);
+    if (moving) this.guardSounds(delta, dist);
+    // vitesse en px/s, comme pour le joueur : le déplacement d'une seule image (~1 px) est trop petit
+    // et ferait croire à animateWalk que le gardien est immobile
+    const perSec = 1000 / delta;
+    animateWalk(this.guard, 'guard', (p.x - this.guard.x) * perSec, (p.y - this.guard.y) * perSec);
+    this.guard.setPosition(p.x, p.y);
     this.torch.setPosition(p.x, p.y);
     this.beam.setPosition(p.x, p.y);
-    const close = Phaser.Math.Distance.Between(p.x, p.y, this.player.x, this.player.y) < GUARD_SIGHT;
+    const close = dist < GUARD_SIGHT;
     if (close && !patrolJustStarted() && this.time.now > this.graceUntil) this.caught();
+  }
+
+  /** Pas du gardien (plus forts quand il est près) et cœur qui s'emballe quand il approche. */
+  guardSounds(delta, dist) {
+    this.guardStepTimer += delta;
+    if (this.guardStepTimer > 480) {
+      this.guardStepTimer = 0;
+      sfx.guardStep(Phaser.Math.Clamp(1 - dist / 650, 0.08, 1) ** 1.5);
+    }
+    const danger = GUARD_SIGHT * 2.5;
+    if (dist < danger) {
+      this.heartTimer += delta;
+      if (this.heartTimer > 380 + (dist / danger) * 500) {
+        this.heartTimer = 0;
+        sfx.heartbeat(1 - dist / danger / 2);
+      }
+    }
   }
 
   freeze() {
@@ -383,6 +423,7 @@ export class HubScene extends Phaser.Scene {
   caught() {
     // Repéré : game over
     this.freeze();
+    sfx.caught();
     state.data.guardChoice = 'caught';
     state.save();
     this.cameras.main.flash(400, 255, 240, 200);

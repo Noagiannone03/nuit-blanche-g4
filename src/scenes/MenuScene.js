@@ -3,6 +3,7 @@ import { state } from '../state/GameState.js';
 import { openDialog, isDialogOpen } from '../ui/dialog.js';
 import { loadBoard } from '../state/leaderboard.js';
 import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../ui/theme.js';
+import { setAmbience, toggleMute, isMuted } from '../audio/sound.js';
 
 // Le menu est écrit à la craie sur un tableau noir.
 export class MenuScene extends Phaser.Scene {
@@ -12,6 +13,7 @@ export class MenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    setAmbience(null);
     this.cameras.main.setBackgroundColor(C.wall);
     drawChalkboard(this, 30, 24, width - 60, height - 80);
 
@@ -30,13 +32,23 @@ export class MenuScene extends Phaser.Scene {
     if (state.hasSave()) entries.push({ label: 'Continuer', action: () => this.continueGame() });
     entries.push({ label: 'Classement', action: () => this.showBoard() });
 
+    // bouton son, en haut à droite du tableau
+    this.muteBtn = txt(this, width - 56, 48, '', { size: 22, font: FONT_HAND, weight: '600', color: C.chalk })
+      .setOrigin(1, 0)
+      .setInteractive({ useHandCursor: true });
+    this.muteBtn.on('pointerdown', () => toggleMute());
+
     entries.forEach((e, i) => {
       chalkButton(this, width / 2, 260 + i * 70, e.label, () => !isDialogOpen() && e.action());
     });
 
-    txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {
+    txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  M : son  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {
       size: 14, color: C.ink, weight: '700',
     }).setOrigin(0.5);
+  }
+
+  update() {
+    this.muteBtn.setText(isMuted() ? '🔇 son coupé (M)' : '🔊 son (M)');
   }
 
   newGame() {

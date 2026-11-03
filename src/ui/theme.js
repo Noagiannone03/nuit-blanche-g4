@@ -1,4 +1,5 @@
 // Identité visuelle "école la nuit" : couleurs, polices et petits composants réutilisés par toutes les scènes.
+import { sfx } from '../audio/sound.js';
 
 export const C = {
   ink: 0x1f2a44, // encre / texte foncé
@@ -67,7 +68,10 @@ export function chalkButton(scene, x, y, label, onClick, { width = 340, height =
   const c = scene.add.container(x, y, [g, t]).setSize(width, height).setInteractive({ useHandCursor: true });
   c.on('pointerover', () => draw(true));
   c.on('pointerout', () => draw(false));
-  c.on('pointerdown', onClick);
+  c.on('pointerdown', () => {
+    sfx.click();
+    onClick();
+  });
   return c;
 }
 

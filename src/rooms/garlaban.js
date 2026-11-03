@@ -5,6 +5,7 @@ import { PENALTY_ERROR } from '../config.js';
 import { ROOM_NAMES } from './names.js';
 import { decorHint, lockedDialog } from './helpers.js';
 import { endGame } from '../scenes/endGame.js';
+import { sfx } from '../audio/sound.js';
 
 function orderSummary() {
   return `<ol>${chronologicalRooms().map((r) => `<li>${ROOM_NAMES[r]}</li>`).join('')}</ol>`;
@@ -37,6 +38,7 @@ function openCommits() {
     btn.textContent = `${c.hash}  ${c.time}  ${c.msg}`;
     btn.addEventListener('click', () => {
       if (c.room === expected[step]) {
+        sfx.click();
         step += 1;
         btn.disabled = true;
         btn.classList.add('done');
@@ -45,6 +47,7 @@ function openCommits() {
           state.data.orderFound = true;
           state.solve('garlaban');
           ui.close();
+          sfx.success();
           openDialog({ title: 'L\'ordre du code !', body: `<p>Tu te souviens : tu as travaillé dans cet ordre ce soir. Les chiffres du code se lisent pareil :</p>${orderSummary()}` });
         }
       } else {

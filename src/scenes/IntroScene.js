@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
 import { C, FONT_HAND, FONT_TITLE, txt } from '../ui/theme.js';
+import { sfx, setAmbience } from '../audio/sound.js';
 
 const LINES = [
   'Lundi soir, Cercle de projets. Tout le monde est parti.',
@@ -32,6 +33,7 @@ export class IntroScene extends Phaser.Scene {
 
     txt(this, 150, 34, `Journal de ${state.data.playerName}`, { size: 34, font: FONT_TITLE, color: C.blue });
 
+    setAmbience('dark');
     this.index = 0;
     this.typing = null;
     this.texts = LINES.map((_, i) => txt(this, 150, 110 + i * 68, '', { size: 30, font: FONT_HAND, weight: '600', color: C.ink, wordWrap: { width: 720 } }));
@@ -66,6 +68,7 @@ export class IntroScene extends Phaser.Scene {
       callback: () => {
         n += 1;
         target.setText(line.slice(0, n));
+        if (n % 2) sfx.type();
         if (n >= line.length) this.typing = null;
       },
     });

@@ -27,6 +27,6 @@ Le plan du couloir est inspiré du plan d'évacuation affiché sur le campus G4 
 
 ## Sons
 
-Aucun pour l'instant.
+Tous les sons sont **générés par le code** avec la Web Audio API du navigateur, aucun fichier audio externe : `src/audio/sound.js` (bruitages : pas, portes, interrupteurs, digicode, battements de cœur… ; ambiances : couloir, salle dans le noir, néons).
 
 > ⚠️ Toute ressource ajoutée (image, son, police) doit être listée ici : nom, auteur, licence, lien source.

@@ -2,6 +2,8 @@
 // On passe par du HTML (et pas par Phaser) pour avoir de vrais champs de saisie,
 // la navigation au clavier (Tab / Entrée / Échap) et le clavier virtuel sur mobile.
 
+import { sfx } from '../audio/sound.js';
+
 let current = null;
 
 export function isDialogOpen() {
@@ -92,7 +94,10 @@ export function openDialog({
     btn.type = 'button';
     btn.textContent = b.label;
     if (b.primary) btn.className = 'primary';
-    btn.addEventListener('click', () => b.onClick(ui));
+    btn.addEventListener('click', () => {
+      sfx.click();
+      b.onClick(ui);
+    });
     actions.appendChild(btn);
   }
   if (closable) {
@@ -111,6 +116,7 @@ export function openDialog({
     if (e.key === 'Escape' && closable) closeDialog();
   });
 
+  sfx.paper();
   overlay.innerHTML = '';
   overlay.appendChild(box);
   overlay.classList.add('open');

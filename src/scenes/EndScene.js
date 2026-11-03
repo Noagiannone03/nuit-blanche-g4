@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
 import { computeScore, addEntry } from '../state/leaderboard.js';
 import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../ui/theme.js';
+import { sfx, setAmbience } from '../audio/sound.js';
 
 const ENDINGS = {
   escaped: { stamp: 'ÉVADÉ !', text: 'La porte s\'ouvre dans un déclic. Tu sors dans la nuit, ton projet sauvegardé sur une clé USB.', color: C.green, pose: 'player-down' },
@@ -39,6 +40,11 @@ export class EndScene extends Phaser.Scene {
       success: this.result.success,
     });
     state.clearSave();
+
+    setAmbience(null);
+    if (this.result.reason === 'escaped') sfx.win();
+    else if (this.result.reason === 'window') sfx.alarm();
+    else this.time.delayedCall(this.result.reason === 'caught' ? 600 : 0, () => sfx.lose());
 
     this.cameras.main.setBackgroundColor(C.wall);
     this.cameras.main.fadeIn(500, 0, 0, 0);

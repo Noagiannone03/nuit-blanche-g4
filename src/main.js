@@ -7,6 +7,7 @@ import { HubScene } from './scenes/HubScene.js';
 import { RoomScene } from './scenes/RoomScene.js';
 import { UIScene } from './scenes/UIScene.js';
 import { EndScene } from './scenes/EndScene.js';
+import { toggleMute } from './audio/sound.js';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -22,3 +23,9 @@ const game = new Phaser.Game({
 
 // En développement uniquement : accès au jeu depuis la console (window.game)
 if (import.meta.env.DEV) window.game = game;
+
+// Touche M : couper / remettre le son, partout dans le jeu
+// (les touches tapées dans une boîte de dialogue n'arrivent pas jusqu'ici)
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'm' || e.key === 'M') toggleMute();
+});

@@ -5,6 +5,7 @@ import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { askAnswer, decorHint, lockedDialog } from './helpers.js';
 import { startPatrol } from '../state/patrol.js';
+import { sfx } from '../audio/sound.js';
 
 // 2e énigme : il faut la clé de l'armoire (casier de Sormiou).
 // Elle rétablit le courant dans toute l'école : plus besoin du flash… mais le gardien est alerté
@@ -39,6 +40,7 @@ function openSwitchBox() {
     btn.setAttribute('aria-pressed', 'false');
     btn.textContent = `${key} = 0`;
     btn.addEventListener('click', () => {
+      sfx.toggle();
       values[key] = !values[key];
       btn.setAttribute('aria-pressed', String(values[key]));
       btn.textContent = `${key} = ${values[key] ? 1 : 0}`;
@@ -58,6 +60,8 @@ function openSwitchBox() {
     placeholder: 'Chiffre (0-7)',
     success: `<p>Le courant revient dans toute l'école ! Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p><p>Au fond de l'amphi, le vidéoprojecteur se rallume…</p><p><strong>Au loin, une porte claque : le gardien a vu la lumière. Il commence ses rondes !</strong> Si sa lampe torche t'éclaire dans le couloir, c'est fini.</p>`,
     onSolve: () => {
+      sfx.powerOn();
+      setTimeout(() => sfx.distantSlam(), 2200); // le gardien sort de son local
       state.addItem('mdp-callelongue');
       state.data.guardChoice = 'alerted';
       startPatrol();

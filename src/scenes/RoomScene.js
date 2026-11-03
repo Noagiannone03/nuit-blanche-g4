@@ -7,6 +7,7 @@ import { drawFurniture } from '../art/furniture.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
 import { isPatrolActive } from '../state/patrol.js';
 import { FLASH_RADIUS } from '../config.js';
+import { sfx, setAmbience } from '../audio/sound.js';
 
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
@@ -22,6 +23,8 @@ export class RoomScene extends Phaser.Scene {
     this.def = ROOMS[data.roomKey];
     this.leaving = false; // la même instance de scène est réutilisée à chaque visite
     this.darkness = null;
+    this.tickTimer = this.stepTimer = 0;
+    this.tock = false;
     this.accent = ROOM_BLOCKS.find((r) => r.key === data.roomKey)?.accent ?? C.blue;
   }
 
@@ -83,8 +86,9 @@ export class RoomScene extends Phaser.Scene {
     this.scene.bringToTop('UI');
   }
 
-  update() {
+  update(_, delta) {
     this.footsteps.setVisible(isPatrolActive());
+    if (!this.scene.get('UI').paused) this.roomSounds(delta);
     if (!this.darkness) return;
     if (state.data.solved.ventoux) {
       this.lightsOn();
@@ -96,14 +100,32 @@ export class RoomScene extends Phaser.Scene {
     this.flashGlow.setPosition(this.flashPos.x, this.flashPos.y);
   }
 
+  /** Tic-tac de l'horloge murale, et pas étouffés du gardien qui passe dans le couloir. */
+  roomSounds(delta) {
+    this.tickTimer += delta;
+    if (this.tickTimer > 1000) {
+      this.tickTimer = 0;
+      this.tock = !this.tock;
+      sfx.tick(this.tock);
+    }
+    if (!isPatrolActive()) return;
+    this.stepTimer += delta;
+    if (this.stepTimer > 520) {
+      this.stepTimer = 0;
+      sfx.guardStep(0.45, true);
+    }
+  }
+
   // ---------- Lumière ----------
   lightRoom() {
+    setAmbience('lit');
     nightOverlay(this, 0.22);
     addLight(this, 620, 560, 0xffe9b0, { scale: 1.6, alpha: 0.28 }).setDepth(800);
   }
 
   /** Voile noir sous le bandeau titre ; le flash du téléphone suit la souris (ou le doigt). */
   makeDarkness() {
+    setAmbience('dark');
     const { width, height } = this.scale;
     this.darkness = this.add.renderTexture(0, WALL_TOP - 4, width, height - WALL_TOP + 4).setOrigin(0).setDepth(850);
     this.flashBrush = this.make.image({ key: 'flash' }, false).setScale((FLASH_RADIUS * 2) / 256);

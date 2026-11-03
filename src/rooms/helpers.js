@@ -1,6 +1,7 @@
 import { state } from '../state/GameState.js';
 import { openDialog } from '../ui/dialog.js';
 import { PENALTY_ERROR } from '../config.js';
+import { sfx } from '../audio/sound.js';
 
 /**
  * Dialogue "entrer une réponse" commun à toutes les salles. body : HTML ou élément DOM.
@@ -21,6 +22,7 @@ export function askAnswer({ roomKey, title, body, answer, placeholder = 'Ta rép
         onSolve?.();
         ui.close();
         openDialog({ title: 'Bien joué !', body: success });
+        sfx.success();
       } else {
         state.penalize();
         ui.feedback(`Mauvaise réponse… l'heure tourne : +${PENALTY_ERROR} min.`);

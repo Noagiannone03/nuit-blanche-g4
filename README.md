@@ -30,6 +30,7 @@ npm run dev        # puis ouvrir http://localhost:5173
 | Demander un indice | H | Bouton « Indice » |
 | Revenir au couloir / fermer | Échap | Bouton « Échap · couloir » |
 | Pause / quitter | P (ou Échap dans le couloir) | Bouton ⏸ |
+| Couper / remettre le son | M | Bouton dans le menu et dans la pause |
 
 ## 🔑 Solution complète
 
@@ -67,6 +68,7 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 - Mauvaise réponse : **+20 min** (l'écran clignote en rouge).
 - Indice demandé : **+15 min** (2 ou 3 indices par salle) ; les indices du décor sont gratuits mais comptés.
 - Pause : touche **P** (ou Échap dans le couloir) ; le temps et le gardien s'arrêtent.
+- Son : ambiance de nuit, pas du joueur et du gardien (plus forts quand il approche, étouffés depuis une salle), cœur qui bat quand il est proche, bruitages des énigmes. Tout est généré par le code (`src/audio/sound.js`). Touche **M** pour couper.
 - Sauvegarde automatique (navigateur) : « Sauvegarder et quitter » dans la pause, puis « Continuer » dans le menu.
 - Score = 1000 − minutes écoulées − 50 × indices − 30 × erreurs ; classement des 10 meilleurs (local au navigateur).
 
