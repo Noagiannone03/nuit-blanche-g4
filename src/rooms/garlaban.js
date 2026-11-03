@@ -20,14 +20,12 @@ function openFridge() {
   askAnswer({
     roomKey: 'garlaban',
     title: 'Frigo — le mot sur la porte',
-    body: `${RIDDLE}<p>Dans quel ordre sont-ils servis ?</p>`,
+    doc: RIDDLE,
+    body: '<p>Dans quel ordre sont-ils servis ?</p>',
     answer: EXIT_CODE,
     placeholder: '4 chiffres, dans l\'ordre',
     success: `<p>Tu as trouvé l'ordre du repas… et celui du code de sortie :</p>${orderSummary()}`,
-    onSolve: () => {
-      state.data.orderFound = true;
-      state.save();
-    },
+    onSolve: () => state.set('orderFound', true),
     solvedBody: orderSummary(),
   });
 }
@@ -47,6 +45,7 @@ export default {
     },
     {
       label: 'Micro-ondes',
+      role: 'enq',
       type: 'microwave',
       x: 480, y: 200, w: 140, h: 80, color: 0x3a3a3a,
       onUse() {

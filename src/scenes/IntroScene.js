@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
 import { C, FONT_HAND, FONT_TITLE, txt } from '../ui/theme.js';
 import { sfx, setAmbience } from '../audio/sound.js';
+import { net, ROLES } from '../net/multiplayer.js';
 
 const LINES = [
   'Lundi soir, Cercle de projets. Tout le monde est parti.',
@@ -34,9 +35,13 @@ export class IntroScene extends Phaser.Scene {
     txt(this, 150, 34, `Journal de ${state.data.playerName}`, { size: 34, font: FONT_TITLE, color: C.blue });
 
     setAmbience('dark');
+    // à 2 : une ligne de plus pour présenter les rôles
+    this.lines = net.online
+      ? [...LINES, `Ce soir, à deux : toi ${ROLES[net.role].icon} ${ROLES[net.role].name}, ${net.mate.name} ${ROLES[net.mate.role].icon} ${ROLES[net.mate.role].name}.`]
+      : LINES;
     this.index = 0;
     this.typing = null;
-    this.texts = LINES.map((_, i) => txt(this, 150, 110 + i * 68, '', { size: 30, font: FONT_HAND, weight: '600', color: C.ink, wordWrap: { width: 720 } }));
+    this.texts = this.lines.map((_, i) => txt(this, 150, 110 + i * 68, '', { size: 30, font: FONT_HAND, weight: '600', color: C.ink, wordWrap: { width: 720 } }));
     this.prompt = txt(this, width - 80, height - 46, 'Espace pour continuer →', { size: 24, font: FONT_HAND, weight: '600', color: C.red }).setOrigin(1, 0.5);
     this.tweens.add({ targets: this.prompt, alpha: 0.35, duration: 700, yoyo: true, repeat: -1 });
 
@@ -51,15 +56,15 @@ export class IntroScene extends Phaser.Scene {
     if (this.typing) {
       this.typing.remove();
       this.typing = null;
-      this.texts[this.index - 1].setText(LINES[this.index - 1]);
+      this.texts[this.index - 1].setText(this.lines[this.index - 1]);
       return;
     }
-    if (this.index >= LINES.length) {
+    if (this.index >= this.lines.length) {
       this.cameras.main.fadeOut(400, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Hub'));
       return;
     }
-    const line = LINES[this.index];
+    const line = this.lines[this.index];
     const target = this.texts[this.index];
     let n = 0;
     this.typing = this.time.addEvent({
@@ -73,6 +78,6 @@ export class IntroScene extends Phaser.Scene {
       },
     });
     this.index += 1;
-    if (this.index === LINES.length) this.prompt.setText('Espace pour commencer →');
+    if (this.index === this.lines.length) this.prompt.setText('Espace pour commencer →');
   }
 }

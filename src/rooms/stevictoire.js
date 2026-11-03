@@ -25,6 +25,7 @@ export default {
   objects: [
     {
       label: 'Planning au mur',
+      role: 'enq',
       type: 'planning',
       x: 300, y: 210, w: 340, h: 150, color: 0xf0ead8,
       onUse() {
@@ -39,6 +40,7 @@ export default {
     },
     {
       label: 'Coffre de l\'équipe',
+      role: 'tech',
       type: 'safe',
       x: 720, y: 420, w: 140, h: 120, color: 0x6b6f80,
       onUse() {
@@ -56,6 +58,7 @@ export default {
     },
     {
       label: 'Carnet du chef de projet',
+      role: 'enq',
       type: 'notebook',
       x: 250, y: 470, w: 160, h: 80, color: 0xc9473f,
       onUse() {

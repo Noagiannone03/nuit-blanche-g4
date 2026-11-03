@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { createCharacter, PLAYER_PALETTE, GUARD_PALETTE } from '../art/characters.js';
+import { createCharacter, PLAYER_PALETTE, MATE_PALETTE, GUARD_PALETTE } from '../art/characters.js';
 
 // Prépare tout ce qui est graphique (aucun fichier image : tout est généré en code)
 // et attend le chargement des polices avant d'afficher le menu.
@@ -10,6 +10,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     createCharacter(this, 'player', PLAYER_PALETTE);
+    createCharacter(this, 'mate', MATE_PALETTE);
     createCharacter(this, 'guard', GUARD_PALETTE);
     this.makeLightTexture();
     this.makeFlashTexture();

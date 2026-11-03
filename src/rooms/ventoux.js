@@ -20,7 +20,7 @@ function restorePower() {
   sfx.powerOn();
   setTimeout(() => sfx.distantSlam(), 2200); // le gardien sort de son local
   state.addItem('courant');
-  state.data.guardChoice = 'alerted';
+  state.set('guardChoice', 'alerted');
   startPatrol();
 }
 
@@ -95,6 +95,7 @@ function openSwitchBox() {
     bulb.setAttribute('aria-label', 'Lampe allumée');
     buttons.forEach((b) => (b.disabled = true));
     ui.box.querySelector('.actions button')?.remove(); // plus de « Tester la lampe »
+    ui.box.querySelector('input')?.focus(); // garde le curseur dans la boîte (sinon Échap ne la ferme plus)
     ui.feedback('La lampe s\'allume ! Le courant revient dans toute l\'école… au loin, une porte claque : le gardien commence ses rondes.', 'ok');
     restorePower();
   }
@@ -124,6 +125,7 @@ export default {
   objects: [
     {
       label: 'Tableau du formateur',
+      role: 'enq',
       type: 'chalkboard',
       x: 300, y: 200, w: 360, h: 150, color: 0xe8e8f0,
       onUse() {
@@ -135,12 +137,14 @@ export default {
     },
     {
       label: 'Boîtier électrique',
+      role: 'tech',
       type: 'electric',
       x: 720, y: 220, w: 120, h: 160, color: 0x5a5f73,
       onUse: openSwitchBox,
     },
     {
       label: 'Bureau du formateur',
+      role: 'enq',
       type: 'desk',
       x: 300, y: 470, w: 260, h: 90, color: 0x8a5a35,
       onUse() {
@@ -149,6 +153,7 @@ export default {
     },
     {
       label: 'Vidéoprojecteur',
+      role: 'enq',
       type: 'projector',
       x: 720, y: 480, w: 170, h: 100, color: 0x3a3f47,
       onUse() {

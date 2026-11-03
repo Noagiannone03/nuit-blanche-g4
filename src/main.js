@@ -8,6 +8,9 @@ import { RoomScene } from './scenes/RoomScene.js';
 import { UIScene } from './scenes/UIScene.js';
 import { EndScene } from './scenes/EndScene.js';
 import { toggleMute } from './audio/sound.js';
+import { net, esc } from './net/multiplayer.js';
+import { endGame } from './scenes/endGame.js';
+import { openDialog } from './ui/dialog.js';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -23,6 +26,15 @@ const game = new Phaser.Game({
 
 // En développement uniquement : accès au jeu depuis la console (window.game)
 if (import.meta.env.DEV) window.game = game;
+
+// Partie à 2 : la fin de partie du coéquipier (attrapé, évadé…) vaut aussi pour nous
+net.events.on('end', (success, reason) => {
+  const scene = game.scene.getScenes(true).find((s) => s.scene.key !== 'End');
+  if (scene) endGame(scene, success, reason);
+});
+net.events.on('mate-left', (name) => {
+  openDialog({ title: 'Coéquipier déconnecté', body: `<p><strong>${esc(name)}</strong> a quitté la partie. Tu continues seul : tu peux maintenant tout faire.</p>` });
+});
 
 // Touche M : couper / remettre le son, partout dans le jeu
 // (les touches tapées dans une boîte de dialogue n'arrivent pas jusqu'ici)

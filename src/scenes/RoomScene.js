@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { state } from '../state/GameState.js';
-import { isDialogOpen } from '../ui/dialog.js';
+import { isDialogOpen, openDialog } from '../ui/dialog.js';
 import { ROOMS } from '../rooms/index.js';
 import { ROOM_BLOCKS } from '../data/hubLayout.js';
 import { drawFurniture } from '../art/furniture.js';
@@ -8,6 +8,7 @@ import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js'
 import { isPatrolActive } from '../state/patrol.js';
 import { FLASH_RADIUS } from '../config.js';
 import { sfx, setAmbience } from '../audio/sound.js';
+import { net, ROLES, sendPresence, canUse, roleRefusal } from '../net/multiplayer.js';
 
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
@@ -25,6 +26,7 @@ export class RoomScene extends Phaser.Scene {
     this.darkness = null;
     this.tickTimer = this.stepTimer = 0;
     this.tock = false;
+    this.presenceTimer = 0;
     this.accent = ROOM_BLOCKS.find((r) => r.key === data.roomKey)?.accent ?? C.blue;
   }
 
@@ -52,6 +54,12 @@ export class RoomScene extends Phaser.Scene {
 
     // L'élève, de dos, qui regarde la salle, avec la lumière de son téléphone
     this.add.sprite(620, 588, 'player', 'up0').setScale(1.25).setDepth(600);
+    // à 2 : le coéquipier apparaît à côté quand il est dans la même salle
+    this.mate = this.add.sprite(330, 588, 'mate', 'up0').setScale(1.25).setDepth(600).setVisible(false);
+    this.mateTag = txt(this, 330, 545, '', { size: 12, weight: '800', color: 0xffffff, backgroundColor: hex(0x3f8f5a), padding: { x: 5, y: 1 } })
+      .setOrigin(0.5, 1)
+      .setDepth(870)
+      .setVisible(false);
 
     // Tant que le courant n'est pas rétabli (amphi Mont Ventoux), la salle est noire
     if (state.hasItem('courant')) this.lightRoom();
@@ -89,6 +97,7 @@ export class RoomScene extends Phaser.Scene {
 
   update(_, delta) {
     this.footsteps.setVisible(isPatrolActive());
+    this.updateMate(delta);
     if (!this.scene.get('UI').paused) this.roomSounds(delta);
     if (!this.darkness) return;
     if (state.hasItem('courant')) {
@@ -99,6 +108,29 @@ export class RoomScene extends Phaser.Scene {
     const d = this.darkness;
     d.clear().fill(0x05060c, 0.97).erase(this.flashBrush, this.flashPos.x, this.flashPos.y - d.y);
     this.flashGlow.setPosition(this.flashPos.x, this.flashPos.y);
+    // à 2 dans la même salle : le flash du coéquipier éclaire aussi
+    const mf = this.mateHere() && net.mate.flash;
+    if (mf) d.erase(this.flashBrush, mf.x, mf.y - d.y);
+    this.mateGlow.setVisible(!!mf);
+    if (mf) this.mateGlow.setPosition(mf.x, mf.y);
+  }
+
+  mateHere() {
+    return net.online && net.mate?.room === this.def.key;
+  }
+
+  /** Envoie ma salle (et mon flash) au coéquipier ; affiche le sien s'il est là. */
+  updateMate(delta) {
+    this.presenceTimer += delta;
+    if (this.presenceTimer > 100) {
+      this.presenceTimer = 0;
+      const f = this.darkness && this.flashPos;
+      sendPresence({ room: this.def.key, flash: f ? { x: Math.round(f.x), y: Math.round(f.y) } : null });
+    }
+    const here = this.mateHere();
+    this.mate.setVisible(here);
+    this.mateTag.setVisible(here);
+    if (here) this.mateTag.setText(`${ROLES[net.mate.role].icon} ${net.mate.name}`);
   }
 
   /** Tic-tac de l'horloge murale, et pas étouffés du gardien qui passe dans le couloir. */
@@ -131,6 +163,7 @@ export class RoomScene extends Phaser.Scene {
     this.darkness = this.add.renderTexture(0, WALL_TOP - 4, width, height - WALL_TOP + 4).setOrigin(0).setDepth(850);
     this.flashBrush = this.make.image({ key: 'flash' }, false).setScale((FLASH_RADIUS * 2) / 256);
     this.flashGlow = addLight(this, 0, 0, 0xfff4d6, { scale: (FLASH_RADIUS * 2) / 256, alpha: 0.1 }).setDepth(860);
+    this.mateGlow = addLight(this, 0, 0, 0xd6fff0, { scale: (FLASH_RADIUS * 2) / 256, alpha: 0.1 }).setDepth(860).setVisible(false);
     this.flashPos = { x: width / 2, y: 330 };
     this.input.on('pointermove', (p) => (this.flashPos = { x: p.x, y: p.y }));
     this.input.on('pointerdown', (p) => (this.flashPos = { x: p.x, y: p.y }));
@@ -138,18 +171,19 @@ export class RoomScene extends Phaser.Scene {
 
   /** Le courant revient pendant qu'on est dans la salle : le noir se dissipe. */
   lightsOn() {
-    const { darkness, flashGlow } = this;
+    const { darkness, flashGlow, mateGlow } = this;
     this.darkness = null;
     this.phoneTag.setVisible(false);
     this.cameras.main.flash(300, 255, 250, 220);
     this.lightRoom();
     this.tweens.add({
-      targets: [darkness, flashGlow],
+      targets: [darkness, flashGlow, mateGlow],
       alpha: 0,
       duration: 600,
       onComplete: () => {
         darkness.destroy();
         flashGlow.destroy();
+        mateGlow.destroy();
       },
     });
   }
@@ -191,7 +225,9 @@ export class RoomScene extends Phaser.Scene {
     highlight.lineStyle(3, C.yellow, 1).strokeRoundedRect(x - 8, y - 8, obj.w + 16, obj.h + 16, 8);
     this.tweens.add({ targets: highlight, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
 
-    const label = txt(this, obj.x, y + obj.h + 18, `${i + 1} · ${obj.label}`, {
+    // à 2 : l'icône du rôle qui peut utiliser l'objet (🔧 technicien, 🔍 enquêteur)
+    const role = net.online && obj.role ? ` ${ROLES[obj.role].icon}` : '';
+    const label = txt(this, obj.x, y + obj.h + 18, `${i + 1} · ${obj.label}${role}`, {
       size: 14, weight: '800', color: C.ink, backgroundColor: hex(C.paper), padding: { x: 8, y: 3 },
     })
       .setOrigin(0.5)
@@ -215,6 +251,10 @@ export class RoomScene extends Phaser.Scene {
 
   use(obj) {
     if (isDialogOpen()) return;
+    if (!canUse(obj.role)) {
+      openDialog({ title: `${obj.label} — ${ROLES[obj.role].icon} ${ROLES[obj.role].name}`, body: roleRefusal(obj.role) });
+      return;
+    }
     obj.onUse(this);
   }
 

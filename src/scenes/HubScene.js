@@ -9,8 +9,10 @@ import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js'
 import { endGame } from './endGame.js';
 import { isPatrolActive, patrolJustStarted, guardPosition } from '../state/patrol.js';
 import { sfx, setAmbience } from '../audio/sound.js';
+import { net, ROLES, sendPresence, esc } from '../net/multiplayer.js';
 
 const INTERACT_RADIUS = 46;
+const EXIT_TEAM_RADIUS = 110; // à 2 : les deux joueurs doivent être près de la sortie
 
 // Le couloir : le joueur s'y déplace et entre dans les salles par leurs portes.
 // Le couloir de l'école, vu de dessus : le joueur s'y déplace et entre dans les salles par leurs portes.
@@ -29,6 +31,7 @@ export class HubScene extends Phaser.Scene {
     this.guard = this.torch = this.beam = null;
     this.stepTimer = this.guardStepTimer = this.heartTimer = 0;
     this.stepLeft = false;
+    this.presenceTimer = 0;
     setAmbience('hub');
     this.cameras.main.setBackgroundColor(0x2b2622);
     this.cameras.main.fadeIn(300, 0, 0, 0);
@@ -93,8 +96,52 @@ export class HubScene extends Phaser.Scene {
       if (!isDialogOpen()) this.target = { x: p.worldX, y: p.worldY };
     });
 
+    this.createMate();
+
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     this.scene.bringToTop('UI');
+  }
+
+  // ---------- Le coéquipier (partie à 2) ----------
+  createMate() {
+    this.mate = this.add.sprite(-100, -100, 'mate', 'down0').setVisible(false);
+    this.mateTag = txt(this, 0, 0, '', { size: 12, weight: '800', color: 0xffffff, backgroundColor: hex(0x3f8f5a), padding: { x: 5, y: 1 } })
+      .setOrigin(0.5, 1)
+      .setDepth(999) // sous l'étiquette « E — … »
+      .setVisible(false);
+    // quand il est dans une salle : une étiquette sur la porte
+    this.mateDoor = txt(this, 0, 0, '', { size: 12, weight: '800', color: 0xffffff, backgroundColor: hex(0x3f8f5a), padding: { x: 5, y: 2 } })
+      .setOrigin(0.5)
+      .setDepth(1000)
+      .setVisible(false);
+  }
+
+  updateMate(delta) {
+    const m = net.mate;
+    if (!net.online || !m || m.x === undefined) {
+      this.mate.setVisible(false);
+      this.mateTag.setVisible(false);
+      this.mateDoor.setVisible(false);
+      return;
+    }
+    const label = `${ROLES[m.role].icon} ${m.name}`;
+    if (m.room) {
+      this.mate.setVisible(false);
+      this.mateTag.setVisible(false);
+      const door = ROOM_BLOCKS.find((r) => r.key === m.room)?.door;
+      if (door) this.mateDoor.setText(`${label} est ici`).setPosition(door.x, door.y - 26).setVisible(true);
+      return;
+    }
+    this.mateDoor.setVisible(false);
+    if (!this.mate.visible) this.mate.setPosition(m.x, m.y).setVisible(true); // il sort d'une salle
+    // on glisse vers la dernière position reçue (elle arrive 10 fois par seconde)
+    const t = Math.min(1, delta / 90);
+    const nx = this.mate.x + (m.x - this.mate.x) * t;
+    const ny = this.mate.y + (m.y - this.mate.y) * t;
+    const perSec = 1000 / delta;
+    animateWalk(this.mate, 'mate', (nx - this.mate.x) * perSec, (ny - this.mate.y) * perSec);
+    this.mate.setPosition(nx, ny).setDepth(ny);
+    this.mateTag.setText(label).setPosition(nx, ny - 28).setVisible(true);
   }
 
   // ---------- Décor ----------
@@ -249,6 +296,12 @@ export class HubScene extends Phaser.Scene {
   update(_, delta) {
     // figé = on quitte le couloir (entrée dans une salle, fin de partie) : la scène va s'arrêter
     if (this.frozen) return;
+    this.updateMate(delta);
+    this.presenceTimer += delta;
+    if (this.presenceTimer > 100) {
+      this.presenceTimer = 0;
+      sendPresence({ room: null, x: Math.round(this.player.x), y: Math.round(this.player.y) });
+    }
     this.updateGuard(delta); // le gardien bouge même quand une boîte de dialogue est ouverte
     const body = this.player.body;
     if (isDialogOpen()) {
@@ -319,7 +372,7 @@ export class HubScene extends Phaser.Scene {
   visitDetente() {
     // Bonus : le carnet du gardien, oublié sous un coussin, rend le prochain indice gratuit
     if (!state.hasItem('carnet-gardien')) {
-      state.data.freeHints += 1;
+      state.gainFreeHint();
       state.addItem('carnet-gardien');
       openDialog({
         title: 'Salle de détente',
@@ -334,6 +387,15 @@ export class HubScene extends Phaser.Scene {
   }
 
   tryExit() {
+    // À 2 : la porte de secours ne s'ouvre qu'avec les deux élèves devant
+    const m = net.mate;
+    if (net.online && (m.room || Phaser.Math.Distance.Between(m.x, m.y, EXIT.x, EXIT.y) > EXIT_TEAM_RADIUS)) {
+      openDialog({
+        title: 'Porte de sortie',
+        body: `<p>La barre anti-panique est bloquée : il faut que l'un tape le code pendant que l'autre pousse la porte.</p><p><strong>Attends que ${esc(m.name)} te rejoigne devant la sortie.</strong></p>`,
+      });
+      return;
+    }
     openDialog({
       title: 'Porte de sortie',
       body: '<p>Un boîtier à 4 chiffres. Un voyant rouge clignote.</p>',
@@ -425,8 +487,7 @@ export class HubScene extends Phaser.Scene {
     // Repéré : game over
     this.freeze();
     sfx.caught();
-    state.data.guardChoice = 'caught';
-    state.save();
+    state.set('guardChoice', 'caught');
     this.cameras.main.flash(400, 255, 240, 200);
     this.time.delayedCall(700, () => endGame(this, false, 'caught'));
   }

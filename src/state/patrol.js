@@ -27,6 +27,7 @@ export const isPatrolActive = () => state.data.guard?.phase === 'patrol';
 export const patrolJustStarted = () => isPatrolActive() && state.data.guard.timer < 1500;
 
 export function startPatrol() {
+  state.op('startPatrol');
   state.data.guard = { phase: 'patrol', timer: 0, from: GUARD_OFFICE, to: pickNext(GUARD_OFFICE, null), progress: 0 };
   state.save();
   state.emit('patrol-started');
@@ -54,7 +55,7 @@ export function tickPatrol(delta) {
   if (!g) return;
   g.timer += delta;
   if (g.phase === 'away') {
-    if (g.timer >= AWAY_MS) startPatrol();
+    if (g.timer >= AWAY_MS && !state.follower) startPatrol();
     return;
   }
   g.progress += (GUARD_SPEED * delta) / 1000;
@@ -64,5 +65,6 @@ export function tickPatrol(delta) {
     g.from = g.to;
     g.to = pickNext(g.from, prev);
   }
-  if (g.timer >= PATROL_MS) sendGuardAway();
+  // à 2, c'est l'hôte qui décide quand le gardien part ou revient ; l'invité le fait seulement avancer
+  if (g.timer >= PATROL_MS && !state.follower) sendGuardAway();
 }

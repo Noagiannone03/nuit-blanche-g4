@@ -26,10 +26,27 @@ function freshData(playerName = '') {
 
 // État unique de la partie, partagé par toutes les scènes.
 // Il émet 'changed' à chaque modification pour que l'interface se mette à jour.
+// En partie à 2 : chaque action (solve, addItem…) est aussi signalée par 'op' pour être envoyée
+// au coéquipier (voir src/net/multiplayer.js).
 class GameState extends Phaser.Events.EventEmitter {
   constructor() {
     super();
     this.data = freshData();
+    this.online = false; // partie à 2 : pas de sauvegarde locale (on ne peut pas reprendre seul)
+    this.remote = false; // vrai pendant qu'on rejoue une action reçue du coéquipier
+    this.follower = false; // invité d'une partie à 2 : l'horloge et le gardien viennent de l'hôte
+  }
+
+  /** Signale une action au réseau, sauf si elle vient déjà du coéquipier. */
+  op(name, ...args) {
+    if (!this.remote) this.emit('op', name, args);
+  }
+
+  /** Remplace l'état par celui reçu de l'hôte (on garde où se trouve notre propre personnage). */
+  applySnapshot(data) {
+    const { playerPos, currentRoom } = this.data;
+    this.data = { ...data, playerPos, currentRoom };
+    this.emit('changed');
   }
 
   reset(playerName) {
@@ -39,6 +56,10 @@ class GameState extends Phaser.Events.EventEmitter {
 
   // --- Sauvegarde (localStorage) ---
   save() {
+    if (this.online) {
+      this.emit('changed');
+      return;
+    }
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
     } catch {
@@ -91,6 +112,7 @@ class GameState extends Phaser.Events.EventEmitter {
 
   // --- Erreurs, indices, énigmes ---
   penalize() {
+    this.op('penalize');
     this.data.errors += 1;
     this.addMinutes(PENALTY_ERROR);
     this.save();
@@ -99,6 +121,7 @@ class GameState extends Phaser.Events.EventEmitter {
 
   /** Renvoie le texte de l'indice suivant de la salle, et applique le coût. */
   useHint(roomKey, hints) {
+    this.op('useHint', roomKey, hints);
     const seen = this.data.hintsByRoom[roomKey] || 0;
     if (seen >= hints.length) return { text: hints[hints.length - 1], cost: 0, last: true };
 
@@ -116,6 +139,7 @@ class GameState extends Phaser.Events.EventEmitter {
   }
 
   foundDecorHint(id) {
+    this.op('foundDecorHint', id);
     if (!this.data.decorHints.includes(id)) {
       this.data.decorHints.push(id);
       this.save();
@@ -123,6 +147,7 @@ class GameState extends Phaser.Events.EventEmitter {
   }
 
   solve(roomKey, digit) {
+    this.op('solve', roomKey, digit);
     this.data.solved[roomKey] = true;
     if (digit !== undefined) this.data.digits[roomKey] = digit;
     this.save();
@@ -133,7 +158,22 @@ class GameState extends Phaser.Events.EventEmitter {
   }
 
   addItem(id) {
+    this.op('addItem', id);
     if (!this.hasItem(id)) this.data.items.push(id);
+    this.save();
+  }
+
+  /** Change un drapeau de la partie (guardChoice, orderFound…). */
+  set(key, value) {
+    this.op('set', key, value);
+    this.data[key] = value;
+    this.save();
+  }
+
+  /** Le carnet du gardien : le prochain indice est gratuit. */
+  gainFreeHint() {
+    this.op('gainFreeHint');
+    this.data.freeHints += 1;
     this.save();
   }
 }

@@ -24,6 +24,16 @@ export const PLAYER_PALETTE = {
   outline: 0x1b1420,
 };
 
+// Le coéquipier (partie à 2) : sweat vert, cheveux blonds
+export const MATE_PALETTE = {
+  ...PLAYER_PALETTE,
+  hair: 0xc99a3e,
+  hairLight: 0xe8c46a,
+  jacket: 0x3f8f5a,
+  jacketShadow: 0x2c6a41,
+  pants: 0x4a4a52,
+};
+
 // Le gardien de nuit : casquette et uniforme bleu marine, insigne doré
 export const GUARD_PALETTE = {
   hair: 0x1f2a4d,

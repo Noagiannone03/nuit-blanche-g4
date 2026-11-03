@@ -6,6 +6,7 @@
 |---|---|---|---|
 | [Phaser 3](https://phaser.io) | Phaser Studio Inc. | MIT | Moteur de jeu |
 | [Vite](https://vitejs.dev) | Evan You & contributeurs | MIT | Outil de build |
+| [PeerJS](https://peerjs.com) | Michelle Bu, Eric Zhang & contributeurs | MIT | Mode 2 joueurs en ligne (WebRTC + serveur public de mise en relation 0.peerjs.com) |
 
 ## Polices
 
@@ -18,7 +19,7 @@
 ## Graphismes
 
 Tous les graphismes actuels sont **dessinés en code**, aucune image externe :
-- personnages en pixel art (élève, gardien) : `src/art/characters.js`
+- personnages en pixel art (élève, coéquipier, gardien) : `src/art/characters.js`
 - mobilier des salles (tableaux, bureaux, casiers, frigo…) : `src/art/furniture.js`
 - couloir vu de dessus, ambiance de nuit, lumières : `src/scenes/HubScene.js`, `src/ui/theme.js`, `src/scenes/BootScene.js`
 - intérieur des salles : `src/scenes/RoomScene.js`, `src/rooms/*.js`

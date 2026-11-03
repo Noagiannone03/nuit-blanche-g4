@@ -72,6 +72,17 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 - Sauvegarde automatique (navigateur) : « Sauvegarder et quitter » dans la pause, puis « Continuer » dans le menu.
 - Score = 1000 − minutes écoulées − 50 × indices − 30 × erreurs ; classement des 10 meilleurs (local au navigateur).
 
+## 👥 Mode 2 joueurs (en ligne)
+
+Menu → **Jouer à 2 (en ligne)**. Chacun joue sur son ordinateur. Le premier clique « Créer une partie » et donne le **code à 5 caractères** affiché ; le second clique « Rejoindre avec un code ». Il faut une connexion internet : le serveur public gratuit de PeerJS sert seulement à mettre les deux navigateurs en relation, ensuite ils communiquent en direct (WebRTC).
+
+- **Rôles** : le créateur est le 🔧 **Technicien**. Lui seul ouvre, tape les codes et manipule les appareils : casier, boîtier électrique, clavier du PC, coffre, réponse du frigo. L'invité est l'🔍 **Enquêteur**. Lui seul lit les documents : tableaux, mémos, vidéoprojecteur, imprimante, planning, programme du PC, mot du frigo. L'icône du rôle est affichée sur l'étiquette de chaque objet. Ils doivent donc se parler (à côté, ou en vocal) : l'un lit, l'autre agit.
+- **Ensemble** : chacun voit le personnage de l'autre (sweat vert) dans le couloir et dans les salles. Dans une salle sombre, le flash du coéquipier éclaire aussi. Les objets, chiffres, indices, erreurs et l'horloge sont communs.
+- **Le gardien** est le même pour les deux : **si l'un des deux se fait attraper, la partie est perdue pour les deux.**
+- **La porte de sortie** ne s'ouvre qu'avec les deux élèves devant.
+- À 2, la pause n'arrête pas le temps et la partie n'est pas sauvegardée. Si un joueur se déconnecte, l'autre continue seul, sans rôles.
+- Code : `src/net/multiplayer.js`. L'hôte fait foi : il envoie l'état complet ~6 fois par seconde. L'invité joue ses actions tout de suite et les envoie à l'hôte, qui les rejoue.
+
 ## 🗂️ Structure du dépôt
 
 ```
@@ -82,6 +93,7 @@ src/
   rooms/             contenu de chaque salle : objets, textes, indices
   puzzles/           logique pure des énigmes (les réponses sont calculées par le code)
   state/             état de la partie + sauvegarde, classement
+  net/               mode 2 joueurs en ligne (PeerJS)
   ui/                boîtes de dialogue HTML + CSS
 livrables/           livrables L1 à L5 + journal de bord
 LICENCES.md          ressources utilisées

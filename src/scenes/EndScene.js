@@ -39,7 +39,7 @@ export class EndScene extends Phaser.Scene {
       realSeconds: Math.round(d.realSeconds),
       success: this.result.success,
     });
-    state.clearSave();
+    if (!state.online) state.clearSave(); // à 2, rien n'a été sauvegardé : on garde la partie solo
 
     setAmbience(null);
     if (this.result.reason === 'escaped') sfx.win();

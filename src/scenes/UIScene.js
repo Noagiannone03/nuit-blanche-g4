@@ -9,6 +9,7 @@ import { C, FONT_HAND, hex, txt } from '../ui/theme.js';
 import { endGame } from './endGame.js';
 import { tickPatrol } from '../state/patrol.js';
 import { sfx, toggleMute, isMuted } from '../audio/sound.js';
+import { net, ROLES } from '../net/multiplayer.js';
 
 const DIGIT_ROOMS = ['ventoux', 'callelongue', 'stevictoire', 'sormiou'];
 const SHORT = { ventoux: 'Ventoux', callelongue: 'Callel.', stevictoire: 'Ste Vic.', sormiou: 'Sormiou' };
@@ -104,7 +105,8 @@ export class UIScene extends Phaser.Scene {
       state.save();
     }
 
-    if (state.isTimeUp) endGame(this, false, 'timeout');
+    // à 2, c'est l'horloge de l'hôte qui décide de la fin
+    if (state.isTimeUp && !state.follower) endGame(this, false, 'timeout');
   }
 
   render() {
@@ -114,7 +116,7 @@ export class UIScene extends Phaser.Scene {
     this.clockText.setText(state.clock).setColor(hex(late ? 0xff6b5b : 0xffffff));
     const free = d.freeHints ? ` (+${d.freeHints} offert)` : '';
     this.statsText.setText(`Indices : ${d.hintsUsed}${free}   ·   Erreurs : ${d.errors}`);
-    this.playerText.setText(d.playerName);
+    this.playerText.setText(net.online ? `${ROLES[net.role].icon} ${ROLES[net.role].name} · ${d.playerName}` : d.playerName);
 
     // Les cases ne sont redessinées que si un chiffre ou l'ordre a changé
     const signature = JSON.stringify([d.digits, d.orderFound]);
@@ -138,10 +140,14 @@ export class UIScene extends Phaser.Scene {
   // ---------- Pause ----------
   pause() {
     if (this.paused || isDialogOpen()) return;
-    this.paused = true;
+    // à 2, le temps ne s'arrête pas (le coéquipier continue de jouer)
+    this.paused = !net.online;
+    const intro = net.online
+      ? `<p><strong>Partie à 2 : le temps continue</strong> (il est ${state.clock}). Une partie à 2 n'est pas sauvegardée.</p><p>Ton rôle : ${ROLES[net.role].icon} <strong>${ROLES[net.role].name}</strong>. ${ROLES[net.role].does}</p>`
+      : `<p>Le temps est arrêté (il est <strong>${state.clock}</strong>). Ta partie est sauvegardée automatiquement : tu pourras la reprendre depuis le menu avec « Continuer ».</p>`;
     openDialog({
       title: 'Pause',
-      body: `<p>Le temps est arrêté (il est <strong>${state.clock}</strong>). Ta partie est sauvegardée automatiquement : tu pourras la reprendre depuis le menu avec « Continuer ».</p>
+      body: `${intro}
         <table><tbody>
           <tr><td>Se déplacer</td><td>Flèches ou ZQSD, ou clic / toucher</td></tr>
           <tr><td>Entrer, utiliser</td><td>E ou Entrée · touches 1, 2, 3, 4 dans une salle</td></tr>
@@ -158,7 +164,7 @@ export class UIScene extends Phaser.Scene {
             ui.box.querySelectorAll('.actions button')[1].textContent = toggleMute() ? '🔇 Son coupé' : '🔊 Son activé';
           },
         },
-        { label: 'Sauvegarder et quitter', onClick: () => this.quitToMenu() },
+        { label: net.online ? 'Quitter la partie' : 'Sauvegarder et quitter', onClick: () => this.quitToMenu() },
       ],
       onClose: () => {
         this.paused = false;

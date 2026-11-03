@@ -26,6 +26,7 @@ export default {
   objects: [
     {
       label: 'Tableau blanc',
+      role: 'enq',
       type: 'whiteboard',
       x: 480, y: 200, w: 260, h: 130, color: 0xeef0f4,
       onUse() {
@@ -37,6 +38,7 @@ export default {
     },
     {
       label: 'Casier à code',
+      role: 'tech',
       type: 'locker',
       x: 820, y: 440, w: 110, h: 150, color: 0x4f5566,
       onUse() {
@@ -54,6 +56,7 @@ export default {
     },
     {
       label: 'Bureau et clavier',
+      role: 'enq',
       type: 'keyboardDesk',
       x: 360, y: 450, w: 240, h: 90, color: 0x8a5a35,
       onUse() {

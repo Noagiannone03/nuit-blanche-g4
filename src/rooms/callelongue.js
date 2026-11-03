@@ -5,6 +5,7 @@ import { TASKS } from '../puzzles/planning.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { PENALTY_ERROR } from '../config.js';
 import { askAnswer, decorHint } from './helpers.js';
+import { net, ROLES, esc } from '../net/multiplayer.js';
 
 // 3e énigme : il faut le mot de passe projeté dans l'amphi Mont Ventoux (une fois le courant rétabli).
 // L'imprimante sort alors les durées des tâches dont Ste Victoire a besoin.
@@ -16,7 +17,8 @@ function openProgram() {
   askAnswer({
     roomKey: 'callelongue',
     title: 'PC du formateur — programme.algo',
-    body: `<p>Le dernier fichier ouvert. Le bouton « Exécuter » est cassé : à toi de jouer le rôle de l'ordinateur.</p><pre>${PSEUDO_CODE}</pre><p>Qu'affiche ce programme ?</p>`,
+    doc: `<p>Le dernier fichier ouvert. Le bouton « Exécuter » est cassé : à toi de jouer le rôle de l'ordinateur.</p><pre>${PSEUDO_CODE}</pre>`,
+    body: '<p>Qu\'affiche ce programme ?</p>',
     answer: ROOM_DIGITS.callelongue,
     placeholder: 'Valeur affichée',
     success: `<p>Le terminal affiche <strong>${ROOM_DIGITS.callelongue}</strong> puis : <em>« Bravo, tu ferais un bon compilateur. »</em></p>${PRINT_TEXT()}<p><em>Tu gardes la feuille sur toi.</em></p>`,
@@ -29,9 +31,15 @@ function openPc() {
     openProgram();
     return;
   }
+  const lock = '<p>« Session Callelongue ». Il faut un mot de passe.</p><p>Un post-it sur l\'écran : <em>« Le mdp ? Sur la dernière diapo de notre présentation, dans l\'amphi. »</em></p>';
+  // à 2 : seul le technicien a le clavier
+  if (net.online && net.role === 'enq') {
+    openDialog({ title: 'PC du formateur — session verrouillée', body: `${lock}<p><em>C'est <strong>${esc(net.mate.name)}</strong> (${ROLES.tech.icon} ${ROLES.tech.name}) qui a le clavier.</em></p>` });
+    return;
+  }
   openDialog({
     title: 'PC du formateur — session verrouillée',
-    body: '<p>« Session Callelongue ». Il faut un mot de passe.</p><p>Un post-it sur l\'écran : <em>« Le mdp ? Sur la dernière diapo de notre présentation, dans l\'amphi. »</em></p>',
+    body: lock,
     input: { placeholder: 'Mot de passe', maxLength: 20 },
     submitLabel: 'Se connecter',
     onSubmit(value, ui) {
@@ -61,6 +69,7 @@ export default {
     },
     {
       label: 'Imprimante',
+      role: 'enq',
       type: 'printer',
       x: 180, y: 430, w: 150, h: 100, color: 0xcfd2dc,
       onUse() {
@@ -73,6 +82,7 @@ export default {
     },
     {
       label: 'Rangée de PC éteints',
+      role: 'enq',
       type: 'pcRow',
       x: 780, y: 450, w: 220, h: 110, color: 0x2b2f3a,
       onUse() {
