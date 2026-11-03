@@ -150,7 +150,7 @@ export class HubScene extends Phaser.Scene {
     }
 
     // porte en bois ; une fois le courant rétabli, un filet de lumière passe dessous
-    if (state.data.solved.ventoux) {
+    if (state.hasItem('courant')) {
       const glow = addLight(this, room.door.x, room.door.y, 0xffd27a, { scale: 0.35, alpha: 0.5 }).setDepth(800);
       this.tweens.add({ targets: glow, alpha: 0.25, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }

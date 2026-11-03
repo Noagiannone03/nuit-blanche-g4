@@ -61,12 +61,12 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Prérequis** | Clé de l'armoire trouvée dans le casier de Sormiou |
 | **Énoncé** | Le tableau montre un circuit : P1 = A OU B ; P2 = NON(A ET B) ; P3 = NON B ; P4 = C ET P1 ; LAMPE = P2 ET P3 ET P4, avec l'objectif écrit en dessous : « LAMPE = 1 → la lampe s'allume ». Le boîtier a 3 interrupteurs et une étiquette « ABC, lu en binaire ». |
 | **Solution** | P3 ⇒ B = 0 ; P4 ⇒ C = 1 et A = 1 ; ABC = 101₂ = **5** (une seule combinaison possible) |
-| **Interaction** | La lampe ne réagit pas aux interrupteurs : le joueur règle A, B, C puis clique « Tester la lampe ». Bonne combinaison → la lampe s'allume et le chiffre 5 s'affiche ; sinon pénalité |
+| **Interaction** | La lampe ne réagit pas aux interrupteurs : le joueur règle A, B, C puis clique « Tester la lampe ». Bonne combinaison → la lampe s'allume et le courant revient (sinon pénalité). Le chiffre n'est **pas** donné : le joueur doit convertir lui-même ABC = 101 en décimal et taper **5** (mauvais chiffre : pénalité) |
 | **Récompense** | Chiffre 5 + le courant revient dans toute l'école (fin du noir) ; le vidéoprojecteur affiche le mot de passe du PC de Callelongue. **Le gardien est alerté et commence ses rondes.** |
 | **Indice décor** | Bureau : « Colonnes 4, 2, 1 : 110 → 6 » |
 | **Indice 1** | La clé est dans le casier de Sormiou. |
 | **Indice 2** | Objectif LAMPE = 1 : P2, P3, P4 valent 1. Commence par P3 : que doit valoir B ? |
-| **Indice 3** | A = 1, B = 0, C = 1, puis tester la lampe. |
+| **Indice 3** | A = 1, B = 0, C = 1, puis tester la lampe ; lire 101 avec le mémo du bureau (colonnes 4, 2, 1). |
 | **Erreur** | Chaque test raté : +20 min |
 | **Code** | `src/puzzles/logique.js`, `src/rooms/ventoux.js` |
 

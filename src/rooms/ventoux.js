@@ -3,7 +3,7 @@ import { openDialog } from '../ui/dialog.js';
 import { CIRCUIT_TEXT, lamp } from '../puzzles/logique.js';
 import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
-import { decorHint, lockedDialog } from './helpers.js';
+import { askAnswer, decorHint, lockedDialog } from './helpers.js';
 import { PENALTY_ERROR } from '../config.js';
 import { startPatrol } from '../state/patrol.js';
 import { sfx } from '../audio/sound.js';
@@ -18,7 +18,7 @@ const SLIDE = `<p>Le vidéoprojecteur affiche la dernière diapo de ton équipe 
 function restorePower() {
   sfx.powerOn();
   setTimeout(() => sfx.distantSlam(), 2200); // le gardien sort de son local
-  state.addItem('mdp-callelongue');
+  state.addItem('courant');
   state.data.guardChoice = 'alerted';
   startPatrol();
 }
@@ -28,8 +28,9 @@ function openSwitchBox() {
     lockedDialog('Boîtier électrique', '<p>La porte de l\'armoire est fermée à clé. Une étiquette : <em>« Double de la clé : casier de la salle Sormiou. »</em></p>');
     return;
   }
-  if (state.data.solved.ventoux) {
-    openDialog({ title: 'Boîtier électrique', body: `<p><strong>✓ Déjà résolu : ${ROOM_DIGITS.ventoux}</strong></p><p>La lampe est allumée, le courant est rétabli.</p>` });
+  // La lampe est déjà allumée : il reste à trouver le chiffre (ou c'est déjà fait)
+  if (state.hasItem('courant')) {
+    askDigit();
     return;
   }
   const values = { A: false, B: false, C: false };
@@ -68,29 +69,37 @@ function openSwitchBox() {
   });
 
   function test() {
-    if (state.data.solved.ventoux) return;
+    if (state.hasItem('courant')) return;
     if (!lamp(values.A, values.B, values.C)) {
       state.penalize();
       ui.feedback(`Clac… la lampe reste éteinte. +${PENALTY_ERROR} min.`);
       return;
     }
-    // Bonne combinaison : la lampe s'allume, puis tout le courant revient
-    const abc = ['A', 'B', 'C'].map((k) => (values[k] ? 1 : 0)).join('');
+    // Bonne combinaison : la lampe s'allume et le courant revient.
+    // Le chiffre n'est PAS donné : le joueur doit lire ABC en binaire lui-même.
     bulb.classList.add('on');
     bulb.setAttribute('aria-label', 'Lampe allumée');
     buttons.forEach((b) => (b.disabled = true));
     ui.feedback('La lampe s\'allume !', 'ok');
-    state.solve('ventoux', ROOM_DIGITS.ventoux);
     restorePower();
     setTimeout(() => {
       ui.close();
-      openDialog({
-        title: 'Bien joué !',
-        body: `<p>ABC = ${abc} en binaire = <strong>${ROOM_DIGITS.ventoux}</strong>. Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p><p>Le courant revient dans toute l'école ! Au fond de l'amphi, le vidéoprojecteur se rallume…</p><p><strong>Au loin, une porte claque : le gardien a vu la lumière. Il commence ses rondes !</strong> Si sa lampe torche t'éclaire dans le couloir, c'est fini.</p>`,
-      });
-      sfx.success();
+      askDigit('<p><strong>Le courant revient dans toute l\'école !</strong> Au fond de l\'amphi, le vidéoprojecteur se rallume…</p><p><strong>Au loin, une porte claque : le gardien a vu la lumière. Il commence ses rondes !</strong> Si sa lampe torche t\'éclaire dans le couloir, c\'est fini.</p>');
     }, 1400);
   }
+}
+
+/** 2e étape : la lampe est allumée, le joueur convertit lui-même ABC en décimal. */
+function askDigit(news = '') {
+  askAnswer({
+    roomKey: 'ventoux',
+    title: 'Boîtier électrique — la lampe est allumée',
+    body: `${news}<p>Les interrupteurs sont bloqués dans la bonne position : <strong>A = 1 · B = 0 · C = 1</strong>. L'étiquette du boîtier : <em>« ABC, lu en binaire »</em>.</p><p>Quel chiffre ouvre la suite du code ?</p>`,
+    answer: ROOM_DIGITS.ventoux,
+    placeholder: 'Chiffre (0-7)',
+    success: `<p>Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p>`,
+    solvedBody: '<p>La lampe est allumée, le courant est rétabli.</p>',
+  });
 }
 
 export default {
@@ -130,7 +139,7 @@ export default {
       type: 'projector',
       x: 720, y: 480, w: 170, h: 100, color: 0x3a3f47,
       onUse() {
-        if (!state.data.solved.ventoux) {
+        if (!state.hasItem('courant')) {
           openDialog({ title: 'Vidéoprojecteur', body: '<p>Pas de courant dans l\'amphi : l\'écran reste noir.</p>' });
           return;
         }
@@ -141,6 +150,6 @@ export default {
   hints: [
     'L\'armoire électrique est fermée à clé : la clé est dans le casier à code de la salle Sormiou.',
     'Le but est LAMPE = 1 : P2, P3 et P4 doivent toutes valoir 1. Commence par P3 : que doit valoir B ?',
-    'B = 0. Ensuite P4 impose C = 1, et P1 impose A = 1. Mets A = 1, B = 0, C = 1, puis teste la lampe.',
+    'B = 0. Ensuite P4 impose C = 1, et P1 impose A = 1 : teste A = 1, B = 0, C = 1. Puis lis 101 en binaire avec le mémo du bureau (colonnes 4, 2, 1).',
   ],
 };

@@ -54,7 +54,7 @@ export class RoomScene extends Phaser.Scene {
     this.add.sprite(620, 588, 'player', 'up0').setScale(1.25).setDepth(600);
 
     // Tant que le courant n'est pas rétabli (amphi Mont Ventoux), la salle est noire
-    if (state.data.solved.ventoux) this.lightRoom();
+    if (state.hasItem('courant')) this.lightRoom();
     else this.makeDarkness();
 
     const back = txt(this, this.scale.width - 20, this.scale.height - 18, '← Échap · couloir', {
@@ -91,7 +91,7 @@ export class RoomScene extends Phaser.Scene {
     this.footsteps.setVisible(isPatrolActive());
     if (!this.scene.get('UI').paused) this.roomSounds(delta);
     if (!this.darkness) return;
-    if (state.data.solved.ventoux) {
+    if (state.hasItem('courant')) {
       this.lightsOn();
       return;
     }
