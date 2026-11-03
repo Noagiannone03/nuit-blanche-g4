@@ -1,19 +1,20 @@
 import { state } from '../state/GameState.js';
 import { openDialog } from '../ui/dialog.js';
 import { CIRCUIT_TEXT, lamp } from '../puzzles/logique.js';
-import { TASKS } from '../puzzles/planning.js';
+import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { askAnswer, decorHint, lockedDialog } from './helpers.js';
+import { startPatrol } from '../state/patrol.js';
 
-// 3e énigme : il faut la clé de l'armoire (imprimante de Callelongue).
-// Une fois le courant rétabli, le vidéoprojecteur affiche les durées dont Ste Victoire a besoin.
+// 2e énigme : il faut la clé de l'armoire (casier de Sormiou).
+// Elle rétablit le courant dans toute l'école : plus besoin du flash… mais le gardien est alerté
+// et commence ses rondes. Le vidéoprojecteur affiche alors le mot de passe du PC de Callelongue.
 
-const durationsTable = () =>
-  `<table><thead><tr><th>Tâche</th><th>Durée</th></tr></thead><tbody>${TASKS.map((t) => `<tr><td>${t.id} — ${t.name}</td><td>${t.duration} jour${t.duration > 1 ? 's' : ''}</td></tr>`).join('')}</tbody></table>`;
+const SLIDE = `<p>Le vidéoprojecteur affiche la dernière diapo de ton équipe :</p><p class="hand">Accès salle Callelongue<br>Session : Callelongue — mdp : <strong>${PC_PASSWORD}</strong></p>`;
 
 function openSwitchBox() {
   if (!state.hasItem('cle-armoire')) {
-    lockedDialog('Boîtier électrique', '<p>La porte de l\'armoire est fermée à clé. Une étiquette : <em>« Clé rangée avec le matériel d\'impression. »</em></p>');
+    lockedDialog('Boîtier électrique', '<p>La porte de l\'armoire est fermée à clé. Une étiquette : <em>« Double de la clé : casier de la salle Sormiou. »</em></p>');
     return;
   }
   const values = { A: false, B: false, C: false };
@@ -55,8 +56,12 @@ function openSwitchBox() {
     body: wrap,
     answer: ROOM_DIGITS.ventoux,
     placeholder: 'Chiffre (0-7)',
-    success: `<p>Le courant revient dans l'amphi ! Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p><p>Au fond de la salle, le vidéoprojecteur se rallume…</p>`,
-    onSolve: () => state.addItem('durees'),
+    success: `<p>Le courant revient dans toute l'école ! Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p><p>Au fond de l'amphi, le vidéoprojecteur se rallume…</p><p><strong>Au loin, une porte claque : le gardien a vu la lumière. Il commence ses rondes !</strong> Si sa lampe torche t'éclaire dans le couloir, c'est fini.</p>`,
+    onSolve: () => {
+      state.addItem('mdp-callelongue');
+      state.data.guardChoice = 'alerted';
+      startPatrol();
+    },
   });
 }
 
@@ -97,19 +102,16 @@ export default {
       type: 'projector',
       x: 720, y: 480, w: 170, h: 100, color: 0x3a3f47,
       onUse() {
-        if (!state.hasItem('durees')) {
+        if (!state.data.solved.ventoux) {
           openDialog({ title: 'Vidéoprojecteur', body: '<p>Pas de courant dans l\'amphi : l\'écran reste noir.</p>' });
           return;
         }
-        openDialog({
-          title: 'Présentation projetée',
-          body: `<p>Le vidéoprojecteur affiche la dernière diapo de ton équipe : <em>« Projet Évasion — durées des tâches »</em>.</p>${durationsTable()}<p><em>Tu prends une photo avec ton téléphone : tu pourras la consulter n'importe où.</em></p>`,
-        });
+        openDialog({ title: 'Présentation projetée', body: `${SLIDE}<p><em>Tu prends une photo avec ton téléphone.</em></p>` });
       },
     },
   ],
   hints: [
-    'L\'armoire électrique est fermée à clé : la clé sort de l\'imprimante de Callelongue quand tu as résolu le programme du PC.',
+    'L\'armoire électrique est fermée à clé : la clé est dans le casier à code de la salle Sormiou.',
     'Toutes les portes doivent valoir 1 pour que la lampe s\'allume. Commence par P3 : que doit valoir B ?',
     'B = 0. Ensuite P4 impose C = 1 et P1 impose A = 1. ABC = 101 en binaire… convertis-le en décimal.',
   ],

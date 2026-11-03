@@ -1,12 +1,12 @@
 import { state } from '../state/GameState.js';
 import { openDialog } from '../ui/dialog.js';
 import { POSTITS, POSTIT_COLORS } from '../puzzles/observation.js';
-import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { askAnswer, decorHint } from './helpers.js';
 
-// 1re énigme de la chaîne : rien à apporter. Elle donne le mot de passe du PC de Callelongue.
-const PASSWORD_NOTE = `<p>Collé à l'intérieur de la porte, un post-it :</p><p class="hand">Session Callelongue<br>mdp : <strong>${PC_PASSWORD}</strong></p>`;
+// 1re énigme de la chaîne, à faire dans le noir avec le flash du téléphone.
+// Elle donne la clé de l'armoire électrique de l'amphi Mont Ventoux.
+const KEY_NOTE = '<p>Au fond du casier, une petite clé avec une étiquette :</p><p class="hand">ARMOIRE ÉLECTRIQUE — AMPHI MONT VENTOUX</p>';
 
 export default {
   key: 'sormiou',
@@ -46,9 +46,9 @@ export default {
           body: '<p>Un cadenas à un seul chiffre.</p>',
           answer: ROOM_DIGITS.sormiou,
           placeholder: 'Chiffre',
-          success: `<p>Le casier s'ouvre : une étiquette porte le chiffre <strong>${ROOM_DIGITS.sormiou}</strong>.</p>${PASSWORD_NOTE}`,
-          onSolve: () => state.addItem('mdp-callelongue'),
-          solvedBody: PASSWORD_NOTE,
+          success: `<p>Le casier s'ouvre : une étiquette porte le chiffre <strong>${ROOM_DIGITS.sormiou}</strong>.</p>${KEY_NOTE}`,
+          onSolve: () => state.addItem('cle-armoire'),
+          solvedBody: KEY_NOTE,
         });
       },
     },
@@ -62,7 +62,7 @@ export default {
     },
   ],
   hints: [
-    'Ne compte que les post-it jaunes, dans toute la salle : murs, bureau, sol…',
+    'Il fait noir : balaie toute la salle avec le flash de ton téléphone (il suit la souris). Ne compte que les post-it jaunes, dans toute la salle : murs, bureau, sol…',
     'Regarde bien les bords et le bas de l\'écran : certains post-it jaunes sont près de la plante et presque sous le bureau.',
   ],
 };

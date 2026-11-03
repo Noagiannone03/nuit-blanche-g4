@@ -4,8 +4,8 @@ import { TASKS } from '../puzzles/planning.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { askAnswer, decorHint } from './helpers.js';
 
-// 4e énigme : les durées du planning ont été effacées ; elles sont projetées dans l'amphi
-// Mont Ventoux une fois le courant rétabli. Le coffre donne la clé du frigo de Garlaban.
+// 4e énigme : les durées du planning ont été effacées ; l'imprimante de Callelongue
+// les sort une fois le programme du PC résolu. Le coffre donne la clé du frigo de Garlaban.
 
 const FRIDGE_KEY = '<p>Au fond du coffre, une petite clé avec un porte-clé en forme de yaourt :</p><p class="hand">Frigo de l\'équipe — Point repas</p>';
 
@@ -29,8 +29,8 @@ export default {
       x: 300, y: 210, w: 340, h: 150, color: 0xf0ead8,
       onUse() {
         const note = state.hasItem('durees')
-          ? '<p><em>Tu complètes les durées avec la photo prise dans l\'amphi.</em></p>'
-          : '<p>Quelqu\'un a effacé la colonne des durées. Dans un coin : <em>« Durées : voir notre présentation (amphi). »</em></p>';
+          ? '<p><em>Tu complètes les durées avec la feuille imprimée à Callelongue.</em></p>'
+          : '<p>Quelqu\'un a effacé la colonne des durées. Dans un coin : <em>« Durées : à réimprimer depuis le PC de Callelongue. »</em></p>';
         openDialog({
           title: 'Planning du projet « Évasion »',
           body: `<p>Une tâche ne peut commencer que lorsque <strong>toutes</strong> ses dépendances sont terminées. Les tâches indépendantes avancent en parallèle.</p>${ganttTable()}${note}`,
@@ -64,7 +64,7 @@ export default {
     },
   ],
   hints: [
-    'Les durées effacées sont projetées dans l\'amphi Mont Ventoux, une fois le courant rétabli.',
+    'Les durées effacées sortent de l\'imprimante de Callelongue, une fois le programme du PC résolu.',
     'Calcule la date de fin au plus tôt de chaque tâche : fin = durée + la fin la plus tardive de ses dépendances.',
     'A finit à J1, B à J4, C à J3. D attend B ET C… et E n\'est pas sur le chemin le plus long.',
   ],

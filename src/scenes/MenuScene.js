@@ -26,13 +26,12 @@ export class MenuScene extends Phaser.Scene {
     txt(this, 150, 395, 'toi', { size: 26, font: FONT_HAND, weight: '600', color: C.chalk }).setOrigin(0.5);
     txt(this, 810, 395, 'le gardien', { size: 26, font: FONT_HAND, weight: '600', color: C.chalk }).setOrigin(0.5);
 
-    const entries = [{ label: '1. Nouvelle partie', key: 'ONE', action: () => this.newGame() }];
-    if (state.hasSave()) entries.push({ label: '2. Continuer', key: 'TWO', action: () => this.continueGame() });
-    entries.push({ label: '3. Classement', key: 'THREE', action: () => this.showBoard() });
+    const entries = [{ label: 'Nouvelle partie', action: () => this.newGame() }];
+    if (state.hasSave()) entries.push({ label: 'Continuer', action: () => this.continueGame() });
+    entries.push({ label: 'Classement', action: () => this.showBoard() });
 
     entries.forEach((e, i) => {
       chalkButton(this, width / 2, 260 + i * 70, e.label, () => !isDialogOpen() && e.action());
-      this.input.keyboard.on(`keydown-${e.key}`, () => !isDialogOpen() && e.action());
     });
 
     txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {

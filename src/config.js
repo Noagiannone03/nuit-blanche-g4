@@ -15,14 +15,14 @@ export const GAME_MIN_PER_SEC = END_MINUTES / REAL_DURATION_SEC;
 export const PENALTY_ERROR = 20;
 export const PENALTY_HINT = 15;
 
-// Embranchement : la ronde du gardien
-export const GUARD_TIME = 3 * 60; // à 03:00
-// Après 03:00, le gardien enchaîne les rondes jusqu'au matin (durées en temps réel)
+// Le gardien : quand le courant revient (amphi Mont Ventoux), il enchaîne les rondes jusqu'au matin
+// (durées en temps réel). S'il repère l'élève, c'est perdu.
 export const GUARD_SPEED = 85; // px par seconde (le joueur : 190)
 export const PATROL_MS = 40000; // durée d'une ronde
 export const AWAY_MS = 30000; // pause du gardien dans son local entre deux rondes
-export const GUARD_SIGHT = 65; // distance à laquelle il repère le joueur
-export const HIDE_COST = 45; // se cacher fait perdre 45 min…
-export const CAUGHT_COST = 60; // …se faire repérer en coûte 60
+export const GUARD_SIGHT = 120; // rayon de sa lampe torche : il repère le joueur à cette distance
+
+// Salles plongées dans le noir tant que le courant n'est pas rétabli
+export const FLASH_RADIUS = 110; // rayon éclairé par le flash du téléphone (suit la souris)
 
 export const PLAYER_SPEED = 190;

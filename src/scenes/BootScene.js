@@ -12,6 +12,7 @@ export class BootScene extends Phaser.Scene {
     createCharacter(this, 'player', PLAYER_PALETTE);
     createCharacter(this, 'guard', GUARD_PALETTE);
     this.makeLightTexture();
+    this.makeFlashTexture();
 
     const fonts = Promise.all([
       document.fonts.load('20px "Permanent Marker"'),
@@ -32,6 +33,20 @@ export class BootScene extends Phaser.Scene {
     const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
     grad.addColorStop(0, 'rgba(255,255,255,1)');
     grad.addColorStop(0.35, 'rgba(255,255,255,0.35)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    tex.refresh();
+  }
+
+  // Disque du flash du téléphone : plein au centre, bord adouci (sert de "gomme" dans le noir)
+  makeFlashTexture() {
+    const size = 256;
+    const tex = this.textures.createCanvas('flash', size, size);
+    const ctx = tex.getContext();
+    const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.6, 'rgba(255,255,255,1)');
     grad.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);

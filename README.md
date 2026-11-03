@@ -38,29 +38,28 @@ npm run dev        # puis ouvrir http://localhost:5173
 Les énigmes s'enchaînent : toutes les salles sont ouvertes, mais chacune a besoin d'un objet ou d'une information trouvée dans la précédente.
 
 ```
-Sormiou ──mot de passe──▶ Callelongue ──clé de l'armoire──▶ Mont Ventoux
-   ──durées projetées──▶ Ste Victoire ──clé du frigo──▶ Garlaban ──ordre──▶ Sortie
+Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien alerté) ──mot de passe projeté──▶ Callelongue
+   ──durées imprimées──▶ Ste Victoire ──clé du frigo──▶ Garlaban ──ordre──▶ Sortie
 ```
 
 | Étape | Salle | Domaine | Il faut… | Énigme | Réponse | Ça débloque… |
 |---|---|---|---|---|---|---|
-| 1 | Sormiou | Observation visuelle | rien | Compter les post-it **jaunes** (règle sur le tableau blanc) et ouvrir le casier (objet 2) | **6** | Le mot de passe `CERCLE26`, collé dans le casier |
-| 2 | Callelongue | Algorithmique / code | le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : x = −1, 1, 0, 4, 3 | **3** | La clé de l'armoire électrique (sort de l'imprimante) |
-| 3 | Amphi Mont Ventoux | Logique | la clé de l'armoire | Boîtier (objet 2) : interrupteurs **A = 1, B = 0, C = 1** → la lampe s'allume ; 101 en binaire = 5 | **5** | Le courant : le vidéoprojecteur (objet 4) affiche les durées des tâches |
+| 1 | Sormiou | Observation visuelle | rien (dans le noir, au flash du téléphone) | Compter les post-it **jaunes** (règle sur le tableau blanc) et ouvrir le casier (objet 2) | **6** | La clé de l'armoire électrique de l'amphi |
+| 2 | Amphi Mont Ventoux | Logique | la clé de l'armoire | Boîtier (objet 2) : interrupteurs **A = 1, B = 0, C = 1** → la lampe s'allume ; 101 en binaire = 5 | **5** | Le courant revient partout (plus besoin du flash) ; le vidéoprojecteur (objet 4) affiche le mot de passe `CERCLE26`. **Le gardien commence ses rondes.** |
+| 3 | Callelongue | Algorithmique / code | le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : x = −1, 1, 0, 4, 3 | **3** | L'imprimante sort les durées des tâches |
 | 4 | Ste Victoire | Gestion de projet | les durées | Planning (objet 1) puis coffre (objet 2) : chemin critique A(1) → B(3) → D(4) = 8 jours | **8** | La clé du frigo |
 | 5 | Point repas / Garlaban | Ordre du code | la clé du frigo | Frigo (objet 1) : cliquer les commits du plus ancien au plus récent : 21:47, 22:30, 23:12, 23:58 | Callelongue, Sormiou, Ventoux, Ste Victoire | L'ordre du code |
 | Fin | Porte de sortie (couloir, à gauche) | — | les 4 chiffres + l'ordre | Chiffres dans l'ordre : 3 · 6 · 5 · 8 | **3658** | L'évasion |
 
-**Parcours de la partie parfaite :** Sormiou → Callelongue → Mont Ventoux → Ste Victoire → Garlaban → Sortie.
+**Parcours de la partie parfaite :** Sormiou → Mont Ventoux → Callelongue → Ste Victoire → Garlaban → Sortie.
 
 **Embranchements :**
-- **À 03:00**, le gardien commence ses rondes, et il en fera jusqu'au matin. Il marche au hasard dans tout le couloir pendant ~40 s, se repose ~30 s dans son local, puis repart. Ses rondes continuent pendant que le joueur est dans une salle (un bandeau le signale). Au premier passage, le joueur choisit :
-  - *Se cacher* : −45 min, le gardien saute cette ronde-là, et le prochain indice devient gratuit.
-  - *Continuer* : la ronde commence tout de suite.
-  - S'il voit le joueur : −60 min, retour à l'entrée, et le gardien retourne dans son local avant la ronde suivante.
+- **Au début, le courant est coupé** : les salles sont noires et seul le flash du téléphone (qui suit la souris) éclaire un petit cercle. Le boîtier de l'amphi Mont Ventoux rétablit la lumière.
+- **Le retour du courant alerte le gardien** : il fait des rondes jusqu'au matin. Il marche au hasard dans tout le couloir pendant ~40 s, se repose ~30 s dans son local, puis repart. Ses rondes continuent pendant que le joueur est dans une salle (un bandeau le signale). Le cercle de sa lampe torche est visible : **si le joueur y entre, c'est perdu** (fin « Attrapé »).
+- **Salle de détente** (facultatif) : le carnet du gardien, sous un coussin, rend le prochain indice gratuit.
 - **Fenêtre de Garlaban** : sortie anticipée sans le code → fin « Évasion ratée » (échec).
 
-**Fins possibles :** évasion réussie (code correct), évasion ratée (fenêtre), game over (9h00).
+**Fins possibles :** évasion réussie (code correct), évasion ratée (fenêtre), attrapé (lampe du gardien), game over (9h00).
 
 ## 📏 Règles de jeu
 

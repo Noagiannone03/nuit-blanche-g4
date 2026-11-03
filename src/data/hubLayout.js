@@ -59,7 +59,7 @@ export const GUARD_EDGES = [
 export const GUARD_OFFICE = 'local';
 
 export const HUB_HINTS = [
-  'Les énigmes s\'enchaînent : commence par la salle Sormiou, son casier donne de quoi avancer ailleurs.',
-  'Ordre conseillé : Sormiou → Callelongue → Mont Ventoux → Ste Victoire → Point repas / Garlaban → sortie.',
+  'Les salles sont noires (ton flash suit la souris). Commence par la salle Sormiou : son casier donne la clé pour rétablir le courant à Mont Ventoux.',
+  'Ordre conseillé : Sormiou → Mont Ventoux → Callelongue → Ste Victoire → Point repas / Garlaban → sortie.',
   'La porte de sortie demande un code à 4 chiffres : un chiffre par salle de cours, lus dans l\'ordre trouvé à Garlaban.',
 ];

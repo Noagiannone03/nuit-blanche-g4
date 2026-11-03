@@ -10,16 +10,15 @@ function freshData(playerName = '') {
     realSeconds: 0, // temps réel joué
     hintsUsed: 0, // indices demandés avec le bouton
     decorHints: [], // indices trouvés dans le décor (ids)
-    freeHints: 0, // indices gratuits gagnés (salle de détente)
+    freeHints: 0, // indices gratuits gagnés (carnet du gardien, salle de détente)
     hintsByRoom: {}, // { roomKey: nombre d'indices déjà lus }
     errors: 0,
     solved: {}, // { roomKey: true }
     digits: {}, // { roomKey: chiffre trouvé }
     orderFound: false,
     items: [], // objets / informations récupérés
-    guardDone: false,
-    guardChoice: null, // 'hide' | 'sneak' | 'caught'
-    guard: null, // ronde du gardien : { phase: 'patrol' | 'away', timer, from, to, progress } ; null avant 03:00
+    guardChoice: null, // null (pas encore alerté) | 'alerted' (rondes en cours) | 'caught'
+    guard: null, // ronde du gardien : { phase: 'patrol' | 'away', timer, from, to, progress } ; null tant que le courant est coupé
     playerPos: null,
     currentRoom: null,
   };

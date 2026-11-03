@@ -6,6 +6,7 @@ import { ROOM_BLOCKS } from '../data/hubLayout.js';
 import { drawFurniture } from '../art/furniture.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
 import { isPatrolActive } from '../state/patrol.js';
+import { FLASH_RADIUS } from '../config.js';
 
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
@@ -20,6 +21,7 @@ export class RoomScene extends Phaser.Scene {
   init(data) {
     this.def = ROOMS[data.roomKey];
     this.leaving = false; // la même instance de scène est réutilisée à chaque visite
+    this.darkness = null;
     this.accent = ROOM_BLOCKS.find((r) => r.key === data.roomKey)?.accent ?? C.blue;
   }
 
@@ -47,8 +49,9 @@ export class RoomScene extends Phaser.Scene {
     // L'élève, de dos, qui regarde la salle, avec la lumière de son téléphone
     this.add.sprite(620, 588, 'player', 'up0').setScale(1.25).setDepth(600);
 
-    nightOverlay(this, 0.22);
-    addLight(this, 620, 560, 0xffe9b0, { scale: 1.6, alpha: 0.28 }).setDepth(800);
+    // Tant que le courant n'est pas rétabli (amphi Mont Ventoux), la salle est noire
+    if (state.data.solved.ventoux) this.lightRoom();
+    else this.makeDarkness();
 
     const back = txt(this, this.scale.width - 20, this.scale.height - 18, '← Échap · couloir', {
       size: 15, weight: '800', color: C.ink, backgroundColor: hex(C.paper), padding: { x: 12, y: 7 },
@@ -68,6 +71,13 @@ export class RoomScene extends Phaser.Scene {
       .setDepth(900)
       .setVisible(isPatrolActive());
     this.tweens.add({ targets: this.footsteps, alpha: 0.45, duration: 600, yoyo: true, repeat: -1 });
+    // (même place : le gardien ne fait pas encore ses rondes tant qu'il fait noir)
+    this.phoneTag = txt(this, this.scale.width - 24, 96, '📱 Ton flash suit la souris', {
+      size: 14, weight: '800', color: C.ink, backgroundColor: hex(C.yellow), padding: { x: 10, y: 4 },
+    })
+      .setOrigin(1, 0)
+      .setDepth(900)
+      .setVisible(!!this.darkness);
 
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     this.scene.bringToTop('UI');
@@ -75,6 +85,50 @@ export class RoomScene extends Phaser.Scene {
 
   update() {
     this.footsteps.setVisible(isPatrolActive());
+    if (!this.darkness) return;
+    if (state.data.solved.ventoux) {
+      this.lightsOn();
+      return;
+    }
+    // le noir est redessiné à chaque image, troué là où pointe le flash
+    const d = this.darkness;
+    d.clear().fill(0x05060c, 0.97).erase(this.flashBrush, this.flashPos.x, this.flashPos.y - d.y);
+    this.flashGlow.setPosition(this.flashPos.x, this.flashPos.y);
+  }
+
+  // ---------- Lumière ----------
+  lightRoom() {
+    nightOverlay(this, 0.22);
+    addLight(this, 620, 560, 0xffe9b0, { scale: 1.6, alpha: 0.28 }).setDepth(800);
+  }
+
+  /** Voile noir sous le bandeau titre ; le flash du téléphone suit la souris (ou le doigt). */
+  makeDarkness() {
+    const { width, height } = this.scale;
+    this.darkness = this.add.renderTexture(0, WALL_TOP - 4, width, height - WALL_TOP + 4).setOrigin(0).setDepth(850);
+    this.flashBrush = this.make.image({ key: 'flash' }, false).setScale((FLASH_RADIUS * 2) / 256);
+    this.flashGlow = addLight(this, 0, 0, 0xfff4d6, { scale: (FLASH_RADIUS * 2) / 256, alpha: 0.1 }).setDepth(860);
+    this.flashPos = { x: width / 2, y: 330 };
+    this.input.on('pointermove', (p) => (this.flashPos = { x: p.x, y: p.y }));
+    this.input.on('pointerdown', (p) => (this.flashPos = { x: p.x, y: p.y }));
+  }
+
+  /** Le courant revient pendant qu'on est dans la salle : le noir se dissipe. */
+  lightsOn() {
+    const { darkness, flashGlow } = this;
+    this.darkness = null;
+    this.phoneTag.setVisible(false);
+    this.cameras.main.flash(300, 255, 250, 220);
+    this.lightRoom();
+    this.tweens.add({
+      targets: [darkness, flashGlow],
+      alpha: 0,
+      duration: 600,
+      onComplete: () => {
+        darkness.destroy();
+        flashGlow.destroy();
+      },
+    });
   }
 
   // Bandeau du haut, mur, soubassement, sol carrelé, horloge murale

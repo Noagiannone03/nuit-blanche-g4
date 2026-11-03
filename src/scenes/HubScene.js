@@ -3,11 +3,11 @@ import { state } from '../state/GameState.js';
 import { openDialog, isDialogOpen } from '../ui/dialog.js';
 import { WORLD, START, ROOM_BLOCKS, BLOCKED, EXIT } from '../data/hubLayout.js';
 import { EXIT_CODE } from '../puzzles/code.js';
-import { PLAYER_SPEED, PENALTY_ERROR, GUARD_TIME, HIDE_COST, CAUGHT_COST, GUARD_SIGHT } from '../config.js';
+import { PLAYER_SPEED, PENALTY_ERROR, GUARD_SIGHT } from '../config.js';
 import { animateWalk } from '../art/characters.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
 import { endGame } from './endGame.js';
-import { isPatrolActive, patrolJustStarted, startPatrol, sendGuardAway, guardPosition } from '../state/patrol.js';
+import { isPatrolActive, patrolJustStarted, guardPosition } from '../state/patrol.js';
 
 const INTERACT_RADIUS = 46;
 
@@ -24,7 +24,7 @@ export class HubScene extends Phaser.Scene {
     this.frozen = false;
     this.target = null;
     this.nearby = null;
-    this.guard = this.torch = null;
+    this.guard = this.torch = this.beam = null;
     this.cameras.main.setBackgroundColor(0x2b2622);
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.physics.world.setBounds(WORLD.x, WORLD.y, WORLD.width, WORLD.height);
@@ -51,7 +51,7 @@ export class HubScene extends Phaser.Scene {
 
     // Si le gardien fait sa ronde, il est toujours là en revenant dans le couloir.
     // Petit délai de grâce pour ne pas être attrapé pendant le fondu d'entrée.
-    this.graceUntil = this.time.now + 800;
+    this.graceUntil = this.time.now + 1500;
     if (isPatrolActive()) this.spawnGuard();
     this.onPatrolStarted = () => {
       this.spawnGuard();
@@ -143,9 +143,11 @@ export class HubScene extends Phaser.Scene {
       }).setOrigin(0.5).setDepth(750).setAngle(-4);
     }
 
-    // porte en bois, avec un filet de lumière qui passe dessous
-    const glow = addLight(this, room.door.x, room.door.y, 0xffd27a, { scale: 0.35, alpha: 0.5 }).setDepth(800);
-    this.tweens.add({ targets: glow, alpha: 0.25, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // porte en bois ; une fois le courant rétabli, un filet de lumière passe dessous
+    if (state.data.solved.ventoux) {
+      const glow = addLight(this, room.door.x, room.door.y, 0xffd27a, { scale: 0.35, alpha: 0.5 }).setDepth(800);
+      this.tweens.add({ targets: glow, alpha: 0.25, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    }
     // la porte est posée dans le mur le plus proche du point d'entrée
     const vertical = room.door.x < room.x; // porte sur le côté gauche (Callelongue)
     const doorX = vertical ? room.x + 3 : room.door.x;
@@ -239,9 +241,11 @@ export class HubScene extends Phaser.Scene {
 
   // ---------- Boucle de jeu ----------
   update() {
+    // figé = on quitte le couloir (entrée dans une salle, fin de partie) : la scène va s'arrêter
+    if (this.frozen) return;
     this.updateGuard(); // le gardien bouge même quand une boîte de dialogue est ouverte
     const body = this.player.body;
-    if (isDialogOpen() || this.frozen) {
+    if (isDialogOpen()) {
       body.setVelocity(0);
       animateWalk(this.player, 'player', 0, 0);
       return;
@@ -267,7 +271,6 @@ export class HubScene extends Phaser.Scene {
     this.playerLight.setPosition(this.player.x, this.player.y + 8);
 
     this.updatePrompt();
-    this.checkGuard();
   }
 
   updatePrompt() {
@@ -292,12 +295,22 @@ export class HubScene extends Phaser.Scene {
   enterRoom(room) {
     state.data.playerPos = { x: this.player.x, y: this.player.y };
     state.save();
-    this.frozen = true;
+    this.freeze();
     this.cameras.main.fadeOut(220, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Room', { roomKey: room.key }));
   }
 
   visitDetente() {
+    // Bonus : le carnet du gardien, oublié sous un coussin, rend le prochain indice gratuit
+    if (!state.hasItem('carnet-gardien')) {
+      state.data.freeHints += 1;
+      state.addItem('carnet-gardien');
+      openDialog({
+        title: 'Salle de détente',
+        body: '<p>Le canapé te fait de l\'œil… Pas le moment de se rendormir.</p><p>Sous un coussin, tu trouves le carnet du gardien, plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
+      });
+      return;
+    }
     openDialog({
       title: 'Salle de détente',
       body: '<p>Le canapé te fait de l\'œil… Pas le moment de se rendormir.</p>',
@@ -322,49 +335,13 @@ export class HubScene extends Phaser.Scene {
     });
   }
 
-  // ---------- Embranchement : la ronde du gardien ----------
-  checkGuard() {
-    if (state.data.guardDone || state.data.minutes < GUARD_TIME) return;
-    state.data.guardDone = true;
-    state.save();
-    openDialog({
-      title: '03:00 — Des pas dans le couloir !',
-      body: '<p>Le faisceau d\'une lampe torche balaie le couloir : le gardien fait sa ronde. Et il en fera d\'autres jusqu\'au matin…</p><p>Que fais-tu ?</p>',
-      closable: false,
-      buttons: [
-        { label: `Me cacher dans la salle de détente (−${HIDE_COST} min, sans risque)`, onClick: () => this.hide() },
-        { label: 'Continuer en l\'évitant (risqué)', primary: true, onClick: () => this.sneak() },
-      ],
-    });
-  }
-
-  hide() {
-    state.data.guardChoice = 'hide';
-    state.data.freeHints += 1;
-    state.addMinutes(HIDE_COST);
-    sendGuardAway({ quiet: true }); // il saute cette ronde-ci, puis reprend ses rondes plus tard
-    openDialog({
-      title: 'Salle de détente',
-      body: '<p>Tu attends derrière le canapé que les pas s\'éloignent… Le temps file. Le gardien finit sa ronde sans te voir, <strong>mais il reviendra</strong>.</p><p>Sous un coussin, tu trouves le carnet du gardien, plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
-    });
-  }
-
-  sneak() {
-    state.data.guardChoice = 'sneak';
-    state.save();
-    openDialog({
-      title: 'Discrétion',
-      body: '<p>Évite le faisceau de sa lampe ! Il se promène au hasard dans tout le couloir, fait une pause dans son local, puis repart. Se réfugier dans une salle ne fait que gagner du temps : il sera peut-être juste devant la porte en sortant.</p>',
-      buttons: [{ label: 'C\'est parti', primary: true, onClick: (ui) => ui.close() }],
-      closable: false,
-      onClose: () => startPatrol(),
-    });
-  }
-
+  // ---------- Le gardien (rondes lancées quand le courant revient) ----------
   spawnGuard() {
     if (this.guard) return;
     const p = guardPosition();
-    this.torch = addLight(this, p.x, p.y, 0xfff1c0, { scale: 0.75, alpha: 0.6 }).setDepth(800);
+    // halo de la lampe torche + zone de repérage visible : y entrer, c'est perdu
+    this.torch = addLight(this, p.x, p.y, 0xfff1c0, { scale: (GUARD_SIGHT * 2.6) / 256, alpha: 0.7 }).setDepth(800);
+    this.beam = this.add.circle(p.x, p.y, GUARD_SIGHT, 0xfff1c0, 0.1).setStrokeStyle(2, 0xfff1c0, 0.35).setDepth(799);
     this.guard = this.add.sprite(p.x, p.y, 'guard', 'side0').setDepth(p.y);
   }
 
@@ -381,7 +358,8 @@ export class HubScene extends Phaser.Scene {
   despawnGuard() {
     this.guard?.destroy();
     this.torch?.destroy();
-    this.guard = this.torch = null;
+    this.beam?.destroy();
+    this.guard = this.torch = this.beam = null;
   }
 
   updateGuard() {
@@ -390,21 +368,24 @@ export class HubScene extends Phaser.Scene {
     animateWalk(this.guard, 'guard', p.x - this.guard.x, p.y - this.guard.y);
     this.guard.setPosition(p.x, p.y).setDepth(p.y);
     this.torch.setPosition(p.x, p.y);
+    this.beam.setPosition(p.x, p.y);
     const close = Phaser.Math.Distance.Between(p.x, p.y, this.player.x, this.player.y) < GUARD_SIGHT;
-    if (close && !this.frozen && !patrolJustStarted() && this.time.now > this.graceUntil) this.caught();
+    if (close && !patrolJustStarted() && this.time.now > this.graceUntil) this.caught();
+  }
+
+  freeze() {
+    this.frozen = true;
+    this.target = null;
+    this.player.body.setVelocity(0);
+    animateWalk(this.player, 'player', 0, 0);
   }
 
   caught() {
-    sendGuardAway({ quiet: true }); // satisfait, il retourne dans son local avant la prochaine ronde
+    // Repéré : game over
+    this.freeze();
     state.data.guardChoice = 'caught';
-    state.addMinutes(CAUGHT_COST);
-    this.player.setPosition(START.x, START.y);
-    this.target = null;
     state.save();
-    this.cameras.main.flash(300, 255, 240, 200);
-    openDialog({
-      title: 'Repéré !',
-      body: `<p>« Qui est là ?! » Tu cours te cacher près de l'entrée et attends que le gardien abandonne ses recherches. Il reprendra ses rondes plus tard.</p><p><strong>+${CAUGHT_COST} min.</strong></p>`,
-    });
+    this.cameras.main.flash(400, 255, 240, 200);
+    this.time.delayedCall(700, () => endGame(this, false, 'caught'));
   }
 }

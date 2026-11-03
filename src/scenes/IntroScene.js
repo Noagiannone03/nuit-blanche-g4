@@ -8,7 +8,7 @@ const LINES = [
   'Tu te réveilles la tête sur le clavier. L\'horloge affiche 00:00.',
   'Les portes sont verrouillées. La sortie demande un code à 4 chiffres.',
   'À 9h00, l\'école ouvre : si on te trouve ici, c\'est fini.',
-  'Fouille les salles. Chaque énigme résolue te rapproche de la sortie.',
+  'Le courant est coupé : dans les salles, seul le flash de ton téléphone t\'éclaire.',
 ];
 
 // Intro sur une page de cahier : chaque ligne s'écrit lettre par lettre.

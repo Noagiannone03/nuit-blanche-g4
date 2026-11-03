@@ -21,13 +21,13 @@ Pendant le Cercle de projets, un élève s'endort sur son clavier. Il se réveil
 
 ### Expérience visée
 - Une partie parfaite de **8 à 15 minutes** ; une partie « normale » de 15 à 20 minutes, avec un peu de stress en fin de partie.
-- Une difficulté progressive : observation, puis code, puis logique, puis gestion de projet, puis synthèse.
+- Une difficulté progressive : observation (dans le noir, au flash du téléphone), puis logique, puis code, puis gestion de projet, puis synthèse.
 - Un jeu jouable **sans installation** sur ordinateur **et sur mobile**, entièrement au clavier.
 
 ### Ce qui nous différencie
-- Le gardien et ses **choix à conséquences** (se cacher ou tenter sa chance).
+- Le **noir** au début (flash du téléphone qui suit la souris), puis le **gardien** réveillé par le retour du courant : s'il nous éclaire, c'est perdu.
 - Les **réponses calculées par le code** (les énigmes sont de vrais petits algorithmes, pas des réponses recopiées).
-- **3 fins** différentes.
+- **4 fins** différentes.
 
 ---
 
@@ -36,7 +36,7 @@ Pendant le Cercle de projets, un élève s'endort sur son clavier. Il se réveil
 | Élément | Contenu |
 |---|---|
 | **Objectif** | Livrer un escape game jouable en ligne, conforme au périmètre minimal, vendredi 6 novembre à 16h00 |
-| **Périmètre inclus** | 5 salles + couloir, 5 énigmes (4 domaines + ordre du code), indices, chrono, pénalités, sauvegarde, embranchements, 3 fins, classement, version mobile |
+| **Périmètre inclus** | 5 salles + couloir, 5 énigmes (4 domaines + ordre du code), indices, chrono, pénalités, sauvegarde, embranchements, 4 fins, classement, version mobile |
 | **Hors périmètre** | Multijoueur en ligne, classement en ligne partagé (optionnel si temps restant), sons originaux complexes |
 | **Livrables** | L1 à L5, journal de bord quotidien (voir planning) |
 | **Technologies** | Phaser 3 (JavaScript), Vite, GitHub, GitHub Actions + GitHub Pages |

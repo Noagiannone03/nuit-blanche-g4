@@ -1,13 +1,16 @@
 import { state } from '../state/GameState.js';
 import { openDialog } from '../ui/dialog.js';
 import { PSEUDO_CODE, PC_PASSWORD } from '../puzzles/algorithmique.js';
+import { TASKS } from '../puzzles/planning.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { PENALTY_ERROR } from '../config.js';
 import { askAnswer, decorHint } from './helpers.js';
 
-// 2e énigme : il faut le mot de passe trouvé dans le casier de Sormiou.
-// Elle donne la clé de l'armoire électrique de l'amphi Mont Ventoux.
-const KEY_TEXT = '<p>L\'imprimante se réveille et crache une feuille. Scotchée dessous, une petite clé avec une étiquette :</p><p class="hand">ARMOIRE ÉLECTRIQUE — AMPHI MONT VENTOUX</p>';
+// 3e énigme : il faut le mot de passe projeté dans l'amphi Mont Ventoux (une fois le courant rétabli).
+// L'imprimante sort alors les durées des tâches dont Ste Victoire a besoin.
+const durationsTable = () =>
+  `<table><thead><tr><th>Tâche</th><th>Durée</th></tr></thead><tbody>${TASKS.map((t) => `<tr><td>${t.id} — ${t.name}</td><td>${t.duration} jour${t.duration > 1 ? 's' : ''}</td></tr>`).join('')}</tbody></table>`;
+const PRINT_TEXT = () => `<p>L'imprimante se réveille et crache une feuille : <em>« Projet Évasion — durées des tâches »</em>.</p>${durationsTable()}`;
 
 function openProgram() {
   askAnswer({
@@ -16,8 +19,8 @@ function openProgram() {
     body: `<p>Le dernier fichier ouvert. Le bouton « Exécuter » est cassé : à toi de jouer le rôle de l'ordinateur.</p><pre>${PSEUDO_CODE}</pre><p>Qu'affiche ce programme ?</p>`,
     answer: ROOM_DIGITS.callelongue,
     placeholder: 'Valeur affichée',
-    success: `<p>Le terminal affiche <strong>${ROOM_DIGITS.callelongue}</strong> puis : <em>« Bravo, tu ferais un bon compilateur. »</em></p>${KEY_TEXT}`,
-    onSolve: () => state.addItem('cle-armoire'),
+    success: `<p>Le terminal affiche <strong>${ROOM_DIGITS.callelongue}</strong> puis : <em>« Bravo, tu ferais un bon compilateur. »</em></p>${PRINT_TEXT()}<p><em>Tu gardes la feuille sur toi.</em></p>`,
+    onSolve: () => state.addItem('durees'),
   });
 }
 
@@ -28,7 +31,7 @@ function openPc() {
   }
   openDialog({
     title: 'PC du formateur — session verrouillée',
-    body: '<p>« Session Callelongue ». Il faut un mot de passe.</p>',
+    body: '<p>« Session Callelongue ». Il faut un mot de passe.</p><p>Un post-it sur l\'écran : <em>« Le mdp ? Sur la dernière diapo de notre présentation, dans l\'amphi. »</em></p>',
     input: { placeholder: 'Mot de passe', maxLength: 20 },
     submitLabel: 'Se connecter',
     onSubmit(value, ui) {
@@ -61,8 +64,8 @@ export default {
       type: 'printer',
       x: 180, y: 430, w: 150, h: 100, color: 0xcfd2dc,
       onUse() {
-        if (state.hasItem('cle-armoire')) {
-          openDialog({ title: 'Imprimante', body: `${KEY_TEXT}<p><em>La clé est dans ta poche.</em></p>` });
+        if (state.hasItem('durees')) {
+          openDialog({ title: 'Imprimante', body: `${PRINT_TEXT()}<p><em>La feuille est dans ta poche.</em></p>` });
         } else {
           openDialog({ title: 'Imprimante', body: '<p>L\'imprimante est en veille. Elle attend sûrement qu\'un programme se termine sur le PC…</p>' });
         }
@@ -82,7 +85,7 @@ export default {
     },
   ],
   hints: [
-    'Le mot de passe du PC est rangé dans le casier de la salle Sormiou : il faut d\'abord ouvrir ce casier.',
+    'Le mot de passe du PC est projeté dans l\'amphi Mont Ventoux : il faut d\'abord y rétablir le courant.',
     'Déroule la boucle : i=1 → x=-1, i=2 → x=1, i=3 → x=0… continue jusqu\'à i=5.',
   ],
 };

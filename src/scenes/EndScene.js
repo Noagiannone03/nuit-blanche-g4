@@ -6,10 +6,11 @@ import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../u
 const ENDINGS = {
   escaped: { stamp: 'ÉVADÉ !', text: 'La porte s\'ouvre dans un déclic. Tu sors dans la nuit, ton projet sauvegardé sur une clé USB.', color: C.green, pose: 'player-down' },
   timeout: { stamp: 'COLLÉ !', text: '9h00 : l\'équipe pédagogique arrive… et te trouve endormi dans le couloir.', color: C.red, pose: null },
+  caught: { stamp: 'ATTRAPÉ !', text: '« Qui est là ?! » La lampe du gardien t\'éblouit. Direction le bureau de la direction… à 9h pile.', color: 0x2a4a8a, pose: 'player-down' },
   window: { stamp: 'ALARME !', text: 'Tu sautes par la fenêtre… et l\'alarme hurle dans tout le quartier. Demain, tout le monde saura.', color: 0xe07b1f, pose: 'player-side' },
 };
 
-const GUARD_LABEL = { hide: 'caché en salle de détente', sneak: 'passé sous son nez', caught: 'repéré !', null: 'pas croisé' };
+const GUARD_LABEL = { alerted: 'semé', caught: 'attrapé !', null: 'pas réveillé' };
 
 // L'écran de fin est un bulletin scolaire posé sur le tableau noir.
 export class EndScene extends Phaser.Scene {
