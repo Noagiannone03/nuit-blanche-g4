@@ -19,8 +19,9 @@ export class HubScene extends Phaser.Scene {
     super('Hub');
   }
 
-  create() {
+  create(data) {
     state.data.currentRoom = null;
+    if (data?.fromRoom) sfx.doorClose(); // la porte de la salle se referme derrière l'élève
     // la même instance de scène est réutilisée : on repart d'un état propre
     this.frozen = false;
     this.target = null;
@@ -310,7 +311,7 @@ export class HubScene extends Phaser.Scene {
     state.data.playerPos = { x: this.player.x, y: this.player.y };
     state.save();
     this.freeze();
-    sfx.door();
+    sfx.doorOpen();
     this.cameras.main.fadeOut(220, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Room', { roomKey: room.key }));
   }

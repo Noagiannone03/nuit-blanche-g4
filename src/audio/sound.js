@@ -86,6 +86,12 @@ function noise(dur, { freq = 1000, filter = 'lowpass', q = 1, vol = 0.2, delay =
   src.stop(t + dur + 0.05);
 }
 
+/** Clic métallique du pêne (la pièce de la serrure qui rentre et sort). */
+function latch(delay, pitch = 1) {
+  noise(0.035, { freq: 2600 * pitch, filter: 'bandpass', q: 7, vol: 0.35, delay });
+  tone(900 * pitch, 0.025, { type: 'square', vol: 0.025, delay });
+}
+
 // ---------- Bruitages ----------
 
 export const sfx = {
@@ -109,12 +115,21 @@ export const sfx = {
     tone(52, 0.15, { vol: 0.4 * volume, to: 38, delay: 0.2 });
   },
 
-  /** Porte de salle qui s'ouvre (grincement) puis se referme. */
-  door() {
+  /** Porte qui s'ouvre : on baisse la poignée (clic-clac du pêne), puis la porte pivote (souffle d'air). */
+  doorOpen() {
     if (!ready()) return;
-    tone(320, 0.45, { type: 'sawtooth', vol: 0.025, to: 190, attack: 0.08 });
-    noise(0.2, { freq: 300, vol: 0.25, delay: 0.38 });
-    tone(90, 0.18, { vol: 0.25, to: 60, delay: 0.38 });
+    latch(0);
+    latch(0.07, 0.8);
+    noise(0.45, { freq: 450, vol: 0.1, delay: 0.12, attack: 0.15 });
+  },
+
+  /** Porte qui se referme : choc sourd du bois contre le cadre, puis le pêne qui claque. */
+  doorClose() {
+    if (!ready()) return;
+    noise(0.12, { freq: 400, vol: 0.06, attack: 0.08 });
+    noise(0.28, { freq: 220, vol: 0.55, delay: 0.1 });
+    tone(72, 0.3, { vol: 0.45, to: 42, delay: 0.1 });
+    latch(0.12, 1.1);
   },
 
   /** Une feuille de papier qu'on déplie (ouverture d'une boîte de dialogue). */

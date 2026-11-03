@@ -33,6 +33,7 @@ export class RoomScene extends Phaser.Scene {
     state.data.currentRoom = def.key;
     state.save();
     this.cameras.main.fadeIn(250, 0, 0, 0);
+    sfx.doorClose(); // la porte se referme derrière l'élève
 
     this.drawRoomShell();
 
@@ -222,7 +223,8 @@ export class RoomScene extends Phaser.Scene {
     this.leaving = true;
     state.data.currentRoom = null;
     state.save();
+    sfx.doorOpen();
     this.cameras.main.fadeOut(200, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Hub'));
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Hub', { fromRoom: true }));
   }
 }
