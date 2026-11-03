@@ -10,10 +10,6 @@ function orderSummary() {
   return `<ol>${CODE_ORDER.map((r) => `<li>${ROOM_NAMES[r]} : <strong>${ROOM_DIGITS[r]}</strong></li>`).join('')}</ol>`;
 }
 
-// Les 4 enfants = les 4 chiffres des salles, dans le désordre (5 / 2 / 8 / 3) ; "?" tant qu'un chiffre n'est pas trouvé
-const CHILDREN = ['ventoux', 'sormiou', 'stevictoire', 'callelongue'];
-const childrenList = () => CHILDREN.map((r) => (state.data.digits[r] !== undefined ? state.data.digits[r] : '?')).join(' / ');
-
 // 5e énigme : le frigo est fermé par un cadenas ; la clé est dans le coffre de Ste Victoire.
 // Sur la porte, un mot de la mère : l'ordre dans lequel elle sert ses enfants donne l'ordre du code.
 function openFridge() {
@@ -24,7 +20,7 @@ function openFridge() {
   askAnswer({
     roomKey: 'garlaban',
     title: 'Frigo — le mot sur la porte',
-    body: `${RIDDLE}<p>Les enfants sont les nombres trouvés dans les autres salles : <strong>${childrenList()}</strong>.</p><p>Dans quel ordre sont-ils servis ?</p>`,
+    body: `${RIDDLE}<p>Dans quel ordre sont-ils servis ?</p>`,
     answer: EXIT_CODE,
     placeholder: '4 chiffres, dans l\'ordre',
     success: `<p>Tu as trouvé l'ordre du repas… et celui du code de sortie :</p>${orderSummary()}`,
@@ -80,7 +76,7 @@ export default {
   ],
   hints: [
     'La clé du frigo est dans le coffre de la salle Ste Victoire.',
-    'Pair ou impair ? Les nombres pairs sont les filles, les impairs les garçons. Et plus le nombre est grand, plus l\'enfant est vieux.',
-    'Les filles sont 2 et 8, les garçons 3 et 5. Le 8, le plus vieux, est servi en dernier ; le 3, le plus jeune garçon, en deuxième.',
+    'Les 4 enfants, ce sont les 4 chiffres trouvés dans les autres salles : chaque chiffre est l\'âge d\'un enfant. Pair = fille (XX), impair = garçon (XY).',
+    'Les filles ont 2 et 8 ans, les garçons 3 et 5. Le 3 (plus jeune garçon) est servi 2e, entre son grand frère 5 et une sœur. Le 2 joue avec le 3, et les deux sœurs ne sont pas côte à côte.',
   ],
 };

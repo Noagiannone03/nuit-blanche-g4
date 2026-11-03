@@ -85,7 +85,7 @@ export default {
     },
   ],
   hints: [
-    'Le mot de passe du PC est projeté dans l\'amphi Mont Ventoux : il faut d\'abord y rétablir le courant.',
+    'Le mot de passe du PC est projeté dans l\'amphi Mont Ventoux : il s\'allume une fois le boîtier électrique résolu.',
     'Note la valeur de nombre après chaque ligne : 3, puis 5. 5 n\'est pas plus grand que 6 : on fait le SINON, nombre vaut 10. Continue…',
   ],
 };

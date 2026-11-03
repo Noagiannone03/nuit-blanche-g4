@@ -4,11 +4,11 @@
 // La mère les sert toujours dans le même ordre : c'est l'ordre du code de sortie.
 
 export const RIDDLE = `<p class="hand">C'est l'heure de manger !</p>
-<p>La mère sert ses enfants toujours dans le même ordre :</p>
+<p>La mère sert ses enfants toujours dans le même ordre, et chacun s'assoit à sa place dans l'ordre du service :</p>
 <ul>
-  <li>La plus jeune des filles est servie en premier.</li>
+  <li>La grande sœur s'est disputée avec sa petite sœur, qui a touché à son maquillage : elles sont toujours en colère.</li>
   <li>Le deuxième servi est le plus jeune garçon : il s'assoit toujours à côté de son grand frère et d'une de ses sœurs.</li>
-  <li>L'enfant le plus vieux est toujours servi en dernier.</li>
+  <li>Les deux plus jeunes passent leur temps ensemble : ils adorent jouer ensemble.</li>
 </ul>`;
 
 const isGirl = (age) => age % 2 === 0;
@@ -29,16 +29,18 @@ export function servingOrder(digits) {
   const girls = rooms.filter((r) => isGirl(age(r)));
   const boys = rooms.filter((r) => !isGirl(age(r)));
   const youngest = (list) => list.reduce((a, b) => (age(a) < age(b) ? a : b));
-  const oldest = rooms.reduce((a, b) => (age(a) > age(b) ? a : b));
+
+  const [first, second] = [...rooms].sort((a, b) => age(a) - age(b)); // les deux plus jeunes
+  const nextTo = (o, x, y) => Math.abs(o.indexOf(x) - o.indexOf(y)) === 1;
 
   const valid = permutations(rooms).filter((o) => {
     const neighbours = [o[0], o[2]]; // ceux qui sont assis à côté du 2e servi
     return (
-      o[0] === youngest(girls) &&
+      !nextTo(o, girls[0], girls[1]) && // les deux sœurs fâchées ne sont pas côte à côte
       o[1] === youngest(boys) &&
       neighbours.some((r) => !isGirl(age(r)) && age(r) > age(o[1])) && // son grand frère
       neighbours.some((r) => isGirl(age(r))) && // une de ses sœurs
-      o[3] === oldest
+      nextTo(o, first, second) // les deux plus jeunes, ensemble
     );
   });
   if (valid.length !== 1) throw new Error(`L'énigme du repas a ${valid.length} solutions au lieu d'une`);

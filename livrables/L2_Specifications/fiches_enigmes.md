@@ -61,12 +61,12 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Prérequis** | Clé de l'armoire trouvée dans le casier de Sormiou |
 | **Énoncé** | Le tableau montre un circuit : P1 = A OU B ; P2 = NON(A ET B) ; P3 = NON B ; P4 = C ET P1 ; LAMPE = P2 ET P3 ET P4, avec l'objectif écrit en dessous : « LAMPE = 1 → la lampe s'allume ». Le boîtier a 3 interrupteurs et une étiquette « ABC, lu en binaire ». |
 | **Solution** | P3 ⇒ B = 0 ; P4 ⇒ C = 1 et A = 1 ; ABC = 101₂ = **5** (une seule combinaison possible) |
-| **Interaction** | La lampe ne réagit pas aux interrupteurs : le joueur règle A, B, C puis clique « Tester la lampe ». Bonne combinaison → la lampe s'allume et le courant revient (sinon pénalité). Le chiffre n'est **pas** donné : le joueur doit convertir lui-même ABC = 101 en décimal et taper **5** (mauvais chiffre : pénalité) |
+| **Interaction** | Interrupteurs, lampe et champ du chiffre sont dans la même boîte. La lampe ne réagit pas seule : « Tester la lampe » avec la bonne combinaison l'allume et rétablit le courant (gardien alerté), sinon pénalité. Le joueur peut aussi, s'il est sûr de lui, taper directement le chiffre sans tester : la lumière reste éteinte et le gardien dort. Dans les deux cas il convertit lui-même ABC = 101 en décimal et tape **5** (mauvais chiffre : pénalité). Le vidéoprojecteur repart sur onduleur une fois le chiffre trouvé. |
 | **Récompense** | Chiffre 5 + le courant revient dans toute l'école (fin du noir) ; le vidéoprojecteur affiche le mot de passe du PC de Callelongue. **Le gardien est alerté et commence ses rondes.** |
 | **Indice décor** | Bureau : « Colonnes 4, 2, 1 : 110 → 6 » |
 | **Indice 1** | La clé est dans le casier de Sormiou. |
 | **Indice 2** | Objectif LAMPE = 1 : P2, P3, P4 valent 1. Commence par P3 : que doit valoir B ? |
-| **Indice 3** | A = 1, B = 0, C = 1, puis tester la lampe ; lire 101 avec le mémo du bureau (colonnes 4, 2, 1). |
+| **Indice 3** | A = 1, B = 0, C = 1 ; lire 101 avec le mémo du bureau (colonnes 4, 2, 1). On peut taper le chiffre sans tester la lampe pour ne pas réveiller le gardien. |
 | **Erreur** | Chaque test raté : +20 min |
 | **Code** | `src/puzzles/logique.js`, `src/rooms/ventoux.js` |
 
@@ -77,13 +77,13 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Domaine** | Algorithmique / code |
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 2 min |
-| **Prérequis** | Mot de passe projeté dans l'amphi Mont Ventoux (une fois le courant rétabli) |
+| **Prérequis** | Mot de passe projeté dans l'amphi Mont Ventoux (une fois le boîtier résolu) |
 | **Énoncé** | Le PC affiche un pseudo-code ; le bouton « Exécuter » est cassé. Qu'affiche le programme ? |
 | **Programme** | `nombre ← 3 ; nombre ← nombre + 2 ; SI nombre > 6 ALORS nombre ← nombre − 3 SINON nombre ← nombre × 2 ; nombre ← nombre − 4 ; SI nombre est pair ALORS nombre ← nombre / 2 SINON nombre ← nombre + 1 ; AFFICHER nombre` |
 | **Solution** | 3 → 5 → 5 n'est pas > 6, donc SINON : 10 → 10 − 4 = 6 → 6 est pair : 6 / 2 = **3** |
 | **Récompense** | Chiffre 3 + l'imprimante sort les durées des tâches pour Ste Victoire |
 | **Indice décor** | Post-it sur la rangée de PC : « écris la valeur de nombre après chaque ligne ; un SI n'exécute qu'une branche », avec les deux premières lignes déroulées |
-| **Indice 1** | Le mot de passe est projeté dans l'amphi Mont Ventoux, une fois le courant rétabli. |
+| **Indice 1** | Le mot de passe est projeté dans l'amphi Mont Ventoux, une fois le boîtier électrique résolu. |
 | **Indice 2** | 3, puis 5 ; 5 n'est pas > 6, donc SINON : 10… |
 | **Erreur** | Mauvais mot de passe ou mauvaise réponse : +20 min |
 | **Code** | `src/puzzles/algorithmique.js`, `src/rooms/callelongue.js` |
@@ -114,16 +114,16 @@ Un objet verrouillé explique toujours ce qui manque et donne un indice sur l'en
 | **Difficulté** | ★★☆ |
 | **Durée visée** | 1 min 30 |
 | **Prérequis** | La clé du frigo, trouvée dans le coffre de Ste Victoire ; les 4 chiffres des autres salles |
-| **Énoncé** | Mot sur le frigo : « C'est l'heure de manger ! La mère sert ses enfants toujours dans le même ordre. La plus jeune des filles est servie en premier. Le deuxième servi est le plus jeune garçon : il s'assoit toujours à côté de son grand frère et d'une de ses sœurs. L'enfant le plus vieux est toujours servi en dernier. » Les enfants sont les nombres 5 / 2 / 8 / 3 trouvés dans les autres salles. |
+| **Énoncé** | Mot sur le frigo : « C'est l'heure de manger ! La mère sert ses enfants toujours dans le même ordre (chacun s'assoit dans l'ordre du service). La grande sœur s'est disputée avec sa petite sœur, qui a touché à son maquillage : elles sont toujours en colère. Le deuxième servi est le plus jeune garçon : il s'assoit toujours à côté de son grand frère et d'une de ses sœurs. Les deux plus jeunes passent leur temps ensemble : ils adorent jouer ensemble. » Les chiffres trouvés ne sont **pas** affichés : le joueur doit comprendre seul que les enfants sont les 4 chiffres des autres salles (indice H n°2 sinon). |
 | **Règle cachée** | Nombre = âge ; pair = fille (XX, nombre pair de X), impair = garçon (XY) |
-| **Solution** | Filles 2 et 8, garçons 3 et 5. 2 (plus jeune fille) → 3 (plus jeune garçon, entre son grand frère 5 et sa sœur 2) → 5 → 8 (le plus vieux) = **2358** |
+| **Solution** | Filles 2 et 8, garçons 3 et 5. 3 (plus jeune garçon) est 2e, entre son grand frère 5 et une sœur. Les deux plus jeunes (2 et 3) sont côte à côte, donc 2 est 1er ou 3e ; les sœurs 2 et 8 ne sont pas côte à côte, donc 2 est 1er, 5 3e, 8 4e = **2358** |
 | **Récompense** | L'ordre du code : Sormiou, Callelongue, Ventoux, Ste Victoire |
 | **Indice décor** | Micro-ondes, magnet de SVT : « Les hommes ont XY, les femmes XX : les chromosomes féminins ont un nombre pair de X ! » |
 | **Indice 1** | La clé du frigo est dans le coffre de Ste Victoire. |
-| **Indice 2** | Pairs = filles, impairs = garçons ; plus le nombre est grand, plus l'enfant est vieux. |
-| **Indice 3** | Le 8 est servi en dernier, le 3 en deuxième. |
+| **Indice 2** | Les 4 enfants sont les 4 chiffres trouvés dans les autres salles (chiffre = âge) ; pair = fille, impair = garçon. |
+| **Indice 3** | Le 3 est servi 2e, entre son grand frère 5 et une sœur ; le 2 joue avec le 3 ; les deux sœurs ne sont pas côte à côte. |
 | **Erreur** | +20 min |
-| **Note de conception** | La règle « la plus jeune des filles est servie en premier » a été ajoutée : sans elle, 2358 et 5328 marchaient tous les deux. Le code vérifie qu'il n'existe qu'une seule solution (`servingOrder` dans `src/puzzles/ordre.js`). |
+| **Note de conception** | Le code vérifie qu'il n'existe qu'une seule solution (`servingOrder` dans `src/puzzles/ordre.js`). |
 | **Piège** | Fenêtre entrouverte → fin « Évasion ratée » |
 | **Code** | `src/puzzles/ordre.js`, `src/rooms/garlaban.js` |
 
