@@ -69,6 +69,9 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 - Indice demandé : **+15 min** (2 ou 3 indices par salle) ; les indices du décor sont gratuits mais comptés.
 - Pause : touche **P** (ou Échap dans le couloir) ; le temps et le gardien s'arrêtent.
 - Son : ambiance de nuit, pas du joueur et du gardien (plus forts quand il approche, étouffés depuis une salle), cœur qui bat quand il est proche, bruitages des énigmes. Tout est généré par le code (`src/audio/sound.js`). Touche **M** pour couper.
+- **Le gardien entendu depuis une salle** : ses pas sont d'autant plus forts et rapprochés qu'il est près de la porte. Un bandeau indique « loin d'ici » (gris), « se rapproche » (orange, à moins de 400 px de la porte) ou « juste devant la porte ! Ne sors pas ! » (rouge, à moins de 200 px, avec le cœur qui bat).
+- **Skin de l'élève** : menu « Mon élève ». On règle la peau, les cheveux, la coiffure (courts, longs, bonnet), le sweat, le pantalon et les baskets, ou on tire au hasard. Le skin est gardé dans le navigateur, vaut en solo comme en ligne, et le coéquipier le voit. Il n'y a pas de sweat jaune, pour ne pas le confondre avec les post-it de Sormiou. Code : `src/art/skins.js`.
+- **Décor** : chaque salle a son décor (fenêtres, radiateurs, étagères, affiches, chaises, distributeur…), décrit dans le champ `decor` de `src/rooms/<salle>.js` et dessiné par `src/art/decor.js`. Aucun élément du décor n'est jaune, toujours à cause des post-it de Sormiou.
 - Sauvegarde automatique (navigateur) : « Sauvegarder et quitter » dans la pause, puis « Continuer » dans le menu.
 - Score = 1000 − minutes écoulées − 50 × indices − 30 × erreurs ; classement des 10 meilleurs (local au navigateur).
 
@@ -77,7 +80,7 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 Menu → **Jouer à 2 (en ligne)**. Chacun joue sur son ordinateur. Le premier clique « Créer une partie » et donne le **code à 5 caractères** affiché ; le second clique « Rejoindre avec un code ». Il faut une connexion internet : le serveur public gratuit de PeerJS sert seulement à mettre les deux navigateurs en relation, ensuite ils communiquent en direct (WebRTC).
 
 - **Rôles** : le créateur est le 🔧 **Technicien**. Lui seul ouvre, tape les codes et manipule les appareils : casier, boîtier électrique, clavier du PC, coffre, réponse du frigo. L'invité est l'🔍 **Enquêteur**. Lui seul lit les documents : tableaux, mémos, vidéoprojecteur, imprimante, planning, programme du PC, mot du frigo. L'icône du rôle est affichée sur l'étiquette de chaque objet. Ils doivent donc se parler (à côté, ou en vocal) : l'un lit, l'autre agit.
-- **Ensemble** : chacun voit le personnage de l'autre (sweat vert) dans le couloir et dans les salles. Dans une salle sombre, le flash du coéquipier éclaire aussi. Les objets, chiffres, indices, erreurs et l'horloge sont communs.
+- **Ensemble** : chacun voit le personnage de l'autre (avec le skin qu'il a choisi) dans le couloir et dans les salles. Dans une salle sombre, le flash du coéquipier éclaire aussi. Les objets, chiffres, indices, erreurs et l'horloge sont communs.
 - **Le gardien** est le même pour les deux : **si l'un des deux se fait attraper, la partie est perdue pour les deux.**
 - **La porte de sortie** ne s'ouvre qu'avec les deux élèves devant.
 - À 2, la pause n'arrête pas le temps et la partie n'est pas sauvegardée. Si un joueur se déconnecte, l'autre continue seul, sans rôles.

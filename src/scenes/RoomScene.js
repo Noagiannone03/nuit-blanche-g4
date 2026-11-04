@@ -4,8 +4,9 @@ import { isDialogOpen, openDialog } from '../ui/dialog.js';
 import { ROOMS } from '../rooms/index.js';
 import { ROOM_BLOCKS } from '../data/hubLayout.js';
 import { drawFurniture } from '../art/furniture.js';
+import { drawDecor } from '../art/decor.js';
 import { C, FONT_TITLE, hex, txt, addLight, nightOverlay } from '../ui/theme.js';
-import { isPatrolActive } from '../state/patrol.js';
+import { isPatrolActive, guardPosition } from '../state/patrol.js';
 import { FLASH_RADIUS } from '../config.js';
 import { sfx, setAmbience } from '../audio/sound.js';
 import { net, ROLES, sendPresence, canUse, roleRefusal } from '../net/multiplayer.js';
@@ -13,6 +14,15 @@ import { net, ROLES, sendPresence, canUse, roleRefusal } from '../net/multiplaye
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
 const FLOOR_Y = 400; // début du sol
+
+// Le gardien vu depuis une salle : on l'entend d'autant plus fort qu'il est près de la porte
+const GUARD_NEAR = 200; // px dans le couloir : juste devant la porte
+const GUARD_HEARD = 700; // au-delà, on l'entend à peine
+const GUARD_LEVELS = [
+  { max: GUARD_NEAR, text: '⚠️ Le gardien est juste devant la porte ! Ne sors pas !', color: C.red },
+  { max: 400, text: '👣 Le gardien se rapproche de la porte…', color: 0xd9822b },
+  { max: Infinity, text: '👣 Le gardien rôde, loin d\'ici', color: 0x4a5a7a },
+];
 
 // Une scène générique : elle affiche la salle décrite dans src/rooms/<salle>.js, vue de face.
 export class RoomScene extends Phaser.Scene {
@@ -27,7 +37,11 @@ export class RoomScene extends Phaser.Scene {
     this.tickTimer = this.stepTimer = 0;
     this.tock = false;
     this.presenceTimer = 0;
-    this.accent = ROOM_BLOCKS.find((r) => r.key === data.roomKey)?.accent ?? C.blue;
+    const block = ROOM_BLOCKS.find((r) => r.key === data.roomKey);
+    this.accent = block?.accent ?? C.blue;
+    this.door = block?.door; // la porte de la salle, côté couloir
+    this.guardLevel = null;
+    this.heartTimer = 0;
   }
 
   create() {
@@ -47,6 +61,8 @@ export class RoomScene extends Phaser.Scene {
       size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(solved ? C.green : this.accent), padding: { x: 10, y: 4 },
     }).setOrigin(1, 0).setDepth(750);
 
+    // le décor d'abord (fenêtres, étagères, chaises…), les objets des énigmes par-dessus
+    for (const item of def.decor || []) this.drawDecorItem(item);
     def.objects.forEach((obj, i) => this.drawObject(obj, i));
 
     // Décor spécifique à la salle (ex. les post-it de Sormiou)
@@ -76,7 +92,7 @@ export class RoomScene extends Phaser.Scene {
 
     // Le gardien continue sa ronde pendant qu'on est dans la salle : on l'entend passer
     // (dans l'en-tête : en bas de l'écran, il cacherait des indices comme les post-it de Sormiou)
-    this.footsteps = txt(this, this.scale.width - 24, 96, '👣 Le gardien rôde dans le couloir !', {
+    this.footsteps = txt(this, this.scale.width - 24, 96, '', {
       size: 14, weight: '800', color: 0xffffff, backgroundColor: hex(C.red), padding: { x: 10, y: 4 },
     })
       .setOrigin(1, 0)
@@ -96,7 +112,7 @@ export class RoomScene extends Phaser.Scene {
   }
 
   update(_, delta) {
-    this.footsteps.setVisible(isPatrolActive());
+    this.updateGuardWarning();
     this.updateMate(delta);
     if (!this.scene.get('UI').paused) this.roomSounds(delta);
     if (!this.darkness) return;
@@ -133,7 +149,26 @@ export class RoomScene extends Phaser.Scene {
     if (here) this.mateTag.setText(`${ROLES[net.mate.role].icon} ${net.mate.name}`);
   }
 
-  /** Tic-tac de l'horloge murale, et pas étouffés du gardien qui passe dans le couloir. */
+  /** Distance (dans le couloir) entre le gardien et la porte de cette salle ; null s'il n'est pas de ronde. */
+  guardDistance() {
+    if (!isPatrolActive() || !this.door) return null;
+    const p = guardPosition();
+    return Math.hypot(p.x - this.door.x, p.y - this.door.y);
+  }
+
+  /** Bandeau qui change selon que le gardien est loin, approche ou est devant la porte. */
+  updateGuardWarning() {
+    const d = this.guardDistance();
+    const level = d === null ? null : GUARD_LEVELS.findIndex((l) => d < l.max);
+    this.footsteps.setVisible(level !== null);
+    if (level === this.guardLevel) return;
+    this.guardLevel = level;
+    if (level === null) return;
+    const l = GUARD_LEVELS[level];
+    this.footsteps.setText(l.text).setBackgroundColor(hex(l.color));
+  }
+
+  /** Tic-tac de l'horloge murale, et pas étouffés du gardien : plus forts et plus rapprochés quand il approche. */
   roomSounds(delta) {
     this.tickTimer += delta;
     if (this.tickTimer > 1000) {
@@ -141,11 +176,21 @@ export class RoomScene extends Phaser.Scene {
       this.tock = !this.tock;
       sfx.tick(this.tock);
     }
-    if (!isPatrolActive()) return;
+    const d = this.guardDistance();
+    if (d === null) return;
+    const near = Phaser.Math.Clamp(1 - d / GUARD_HEARD, 0, 1); // 0 = loin, 1 = contre la porte
     this.stepTimer += delta;
-    if (this.stepTimer > 520) {
+    if (this.stepTimer > 620 - near * 200) {
       this.stepTimer = 0;
-      sfx.guardStep(0.45, true);
+      sfx.guardStep(0.05 + 0.85 * near ** 1.5, true);
+    }
+    // juste devant la porte : le cœur s'emballe
+    if (d < GUARD_NEAR) {
+      this.heartTimer += delta;
+      if (this.heartTimer > 450) {
+        this.heartTimer = 0;
+        sfx.heartbeat(0.8);
+      }
     }
   }
 
@@ -213,6 +258,11 @@ export class RoomScene extends Phaser.Scene {
     const minA = (m % 60) * (Math.PI / 30) - Math.PI / 2;
     g.lineStyle(3, C.ink).lineBetween(cx, cy, cx + Math.cos(hourA) * 11, cy + Math.sin(hourA) * 11);
     g.lineStyle(2, C.red).lineBetween(cx, cy, cx + Math.cos(minA) * 17, cy + Math.sin(minA) * 17);
+  }
+
+  drawDecorItem(item) {
+    drawDecor(this.add.graphics(), item);
+    if (item.text) txt(this, item.x + item.w / 2, item.y + item.h * 0.15, item.text, { size: 13, weight: '800', color: 0xffffff }).setOrigin(0.5);
   }
 
   // Un objet = un meuble dessiné + une étiquette en papier ; surbrillance jaune au survol

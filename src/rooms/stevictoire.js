@@ -22,6 +22,16 @@ export default {
   domain: 'Conception / gestion de projet',
   color: 0x3d2b4f,
   intro: 'Les murs sont couverts de plannings d\'anciens Cercles de projets.',
+  decor: [
+    { type: 'corkboard', x: 665, y: 150, w: 200, h: 120 },
+    { type: 'bookshelf', x: 520, y: 180, w: 105, h: 225 },
+    { type: 'coatRack', x: 35, y: 300, w: 60, h: 190 },
+    { type: 'poster', x: 40, y: 150, w: 70, h: 90, color: 0xc0392b, text: 'Gantt' },
+    { type: 'chairs', x: 175, y: 535, w: 150, h: 56, color: 0x7a3b3b },
+    { type: 'table', x: 390, y: 520, w: 150, h: 70 },
+    { type: 'plant', x: 860, y: 425, w: 70, h: 100 },
+    { type: 'backpack', x: 415, y: 482, w: 36, h: 40 },
+  ],
   objects: [
     {
       label: 'Planning au mur',

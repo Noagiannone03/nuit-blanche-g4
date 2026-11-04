@@ -36,6 +36,15 @@ export default {
   domain: 'Ordre du code',
   color: 0x4a3420,
   intro: 'Ça sent encore la pizza de 20h. Un mot est aimanté sur la porte du frigo.',
+  decor: [
+    { type: 'counter', x: 320, y: 300, w: 310, h: 100 },
+    { type: 'vending', x: 22, y: 185, w: 100, h: 215 },
+    { type: 'poster', x: 600, y: 150, w: 80, h: 95, color: 0x2a9db0, text: 'Menu' },
+    { type: 'arcade', x: 235, y: 410, w: 80, h: 150 },
+    { type: 'table', x: 680, y: 450, w: 170, h: 80 },
+    { type: 'chairs', x: 690, y: 500, w: 150, h: 56, color: 0x2a9db0 },
+    { type: 'bin', x: 165, y: 570, w: 32, h: 44 },
+  ],
   objects: [
     {
       label: 'Frigo',

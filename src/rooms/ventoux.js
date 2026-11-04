@@ -122,6 +122,17 @@ export default {
   domain: 'Logique',
   color: 0x24305e,
   intro: 'Le grand amphi est plongé dans le noir. Seul le tableau électrique clignote.',
+  decor: [
+    { type: 'windowNight', x: 515, y: 150, w: 115, h: 120 },
+    { type: 'radiator', x: 520, y: 345, w: 105, h: 38 },
+    { type: 'poster', x: 805, y: 215, w: 72, h: 95, color: 0x8e6bd6, text: 'ET / OU' },
+    { type: 'exitSign', x: 20, y: 150, w: 70, h: 26 },
+    { type: 'amphiSeats', x: 15, y: 404, w: 150, h: 46 },
+    { type: 'amphiSeats', x: 445, y: 404, w: 180, h: 46 },
+    { type: 'bin', x: 40, y: 560, w: 34, h: 44 },
+    { type: 'plant', x: 860, y: 430, w: 70, h: 100 },
+    { type: 'backpack', x: 470, y: 570, w: 40, h: 46 },
+  ],
   objects: [
     {
       label: 'Tableau du formateur',

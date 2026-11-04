@@ -23,6 +23,15 @@ export default {
       scene.add.rectangle(p.x, p.y, 26, 26, POSTIT_COLORS[p.color]).setAngle(p.angle).setStrokeStyle(1, 0x000000, 0.25);
     }
   },
+  decor: [
+    { type: 'bookshelf', x: 18, y: 160, w: 100, h: 240 },
+    { type: 'flipchart', x: 150, y: 165, w: 90, h: 230 },
+    { type: 'windowNight', x: 650, y: 150, w: 110, h: 115 },
+    { type: 'radiator', x: 655, y: 345, w: 100, h: 38 },
+    { type: 'chairs', x: 255, y: 500, w: 210, h: 60, color: 0x3f8f5a },
+    { type: 'beanbag', x: 655, y: 545, w: 90, h: 70 },
+    { type: 'bin', x: 515, y: 560, w: 30, h: 40 },
+  ],
   objects: [
     {
       label: 'Tableau blanc',

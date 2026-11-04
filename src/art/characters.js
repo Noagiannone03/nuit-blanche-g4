@@ -24,16 +24,6 @@ export const PLAYER_PALETTE = {
   outline: 0x1b1420,
 };
 
-// Le coéquipier (partie à 2) : sweat vert, cheveux blonds
-export const MATE_PALETTE = {
-  ...PLAYER_PALETTE,
-  hair: 0xc99a3e,
-  hairLight: 0xe8c46a,
-  jacket: 0x3f8f5a,
-  jacketShadow: 0x2c6a41,
-  pants: 0x4a4a52,
-};
-
 // Le gardien de nuit : casquette et uniforme bleu marine, insigne doré
 export const GUARD_PALETTE = {
   hair: 0x1f2a4d,
@@ -50,7 +40,7 @@ export const GUARD_PALETTE = {
   outline: 0x0c0c14,
 };
 
-const shade = (c, f) => {
+export const shade = (c, f) => {
   const r = Math.round(((c >> 16) & 255) * f);
   const g = Math.round(((c >> 8) & 255) * f);
   const b = Math.round((c & 255) * f);
@@ -109,6 +99,13 @@ function drawFront(g, p, step) {
   fill(g, 5, 6, 1, 1, 0xffffff); // reflets
   fill(g, 9, 6, 1, 1, 0xffffff);
   fill(g, 7, 8, 2, 1, p.skinShadow); // bouche
+  if (p.style === 'long') {
+    fill(g, 2, 3, 2, 9, p.hair);
+    fill(g, 12, 3, 2, 9, p.hair);
+  } else if (p.style === 'bonnet') {
+    fill(g, 3, 0, 10, 3, p.jacketShadow);
+    fill(g, 3, 3, 10, 1, p.detail);
+  }
 }
 
 function drawBack(g, p, step) {
@@ -120,6 +117,11 @@ function drawBack(g, p, step) {
   fill(g, 7, 10, 2, 1, p.skinShadow);
   fill(g, 3, 1, 10, 9, p.hair);
   fill(g, 5, 1, 4, 1, p.hairLight);
+  if (p.style === 'long') fill(g, 2, 3, 12, 9, p.hair);
+  else if (p.style === 'bonnet') {
+    fill(g, 3, 0, 10, 4, p.jacketShadow);
+    fill(g, 3, 4, 10, 1, p.detail);
+  }
 }
 
 // ---------- Profil (vers la droite ; la gauche = miroir) ----------
@@ -156,6 +158,11 @@ function drawSide(g, p, step) {
   fill(g, 10, 6, 1, 2, p.eyes);
   fill(g, 12, 6, 1, 1, p.skin); // nez
   fill(g, 10, 8, 1, 1, p.skinShadow);
+  if (p.style === 'long') fill(g, 3, 3, 4, 9, p.hair);
+  else if (p.style === 'bonnet') {
+    fill(g, 4, 0, 8, 3, p.jacketShadow);
+    fill(g, 4, 3, 8, 1, p.detail);
+  }
 }
 
 /** Ajoute un contour d'un pixel autour du personnage. */
@@ -177,23 +184,43 @@ function withOutline(g, color) {
 const DRAWERS = { down: drawFront, up: drawBack, side: drawSide };
 const FRAMES = ['down', 'up', 'side'].flatMap((dir) => [0, 1, 2].map((step) => [dir, step]));
 
-/** Crée la feuille de sprites `key` et ses animations `key-down`, `key-up`, `key-side`. */
-export function createCharacter(scene, key, palette) {
-  if (scene.textures.exists(key)) return;
+/** Dessine une pose du personnage sur un canvas 2D, à l'échelle `scale`. */
+function paintFrame(ctx, palette, dir, step, ox, scale) {
+  const g = emptyGrid();
+  DRAWERS[dir](g, palette, step);
+  const pixels = withOutline(g, palette.outline);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (pixels[y][x] === null) continue;
+      ctx.fillStyle = `#${pixels[y][x].toString(16).padStart(6, '0')}`;
+      ctx.fillRect(ox + x * scale, y * scale, scale, scale);
+    }
+  }
+}
+
+/** Aperçu de face, de profil et de dos (choix du skin dans le menu). */
+export function drawPreview(canvas, palette, scale = 5) {
+  canvas.width = W * scale * 3 + scale * 8;
+  canvas.height = H * scale;
+  const ctx = canvas.getContext('2d');
+  ['down', 'side', 'up'].forEach((dir, i) => paintFrame(ctx, palette, dir, 0, i * (W + 4) * scale, scale));
+}
+
+/**
+ * Crée la feuille de sprites `key` et ses animations `key-down`, `key-up`, `key-side`.
+ * force : la recrée (changement de skin).
+ */
+export function createCharacter(scene, key, palette, force = false) {
+  if (scene.textures.exists(key)) {
+    if (!force) return;
+    for (const dir of ['down', 'up', 'side']) scene.anims.remove(`${key}-${dir}`);
+    scene.textures.remove(key);
+  }
   const tex = scene.textures.createCanvas(key, FRAME_W * FRAMES.length, FRAME_H);
   const ctx = tex.getContext();
 
   FRAMES.forEach(([dir, step], i) => {
-    const g = emptyGrid();
-    DRAWERS[dir](g, palette, step);
-    const pixels = withOutline(g, palette.outline);
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        if (pixels[y][x] === null) continue;
-        ctx.fillStyle = `#${pixels[y][x].toString(16).padStart(6, '0')}`;
-        ctx.fillRect(i * FRAME_W + x * PX, y * PX, PX, PX);
-      }
-    }
+    paintFrame(ctx, palette, dir, step, i * FRAME_W, PX);
     tex.add(`${dir}${step}`, 0, i * FRAME_W, 0, FRAME_W, FRAME_H);
   });
   tex.refresh();

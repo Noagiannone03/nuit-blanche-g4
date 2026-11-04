@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Peer } from 'peerjs';
 import { state } from '../state/GameState.js';
 import { startPatrol } from '../state/patrol.js';
+import { loadSkin, cleanSkin, DEFAULT_MATE_SKIN } from '../art/skins.js';
 
 // Partie à 2, chacun sur son ordinateur. PeerJS relie les deux navigateurs en direct (WebRTC) ;
 // son serveur public sert seulement à se trouver grâce au code de la partie.
@@ -37,7 +38,7 @@ export const net = {
   host: false,
   role: null, // 'tech' | 'enq'
   myName: '',
-  mate: null, // { name, role, room, x, y, flash, seen }
+  mate: null, // { name, role, skin, room, x, y, flash, seen }
   events: new Phaser.Events.EventEmitter(), // 'start', 'end', 'error', 'mate-left'
   peer: null,
   conn: null,
@@ -93,15 +94,34 @@ export function joinGame(code, name) {
   net.host = false;
   const peer = new Peer();
   net.peer = peer;
+  let step = 'server'; // 'server' → 'direct' → 'ok'
+  const fail = (msg) => {
+    if (net.online || step === 'ok' || net.peer !== peer) return;
+    step = 'ok';
+    clearTimeout(timeout);
+    leave();
+    net.events.emit('error', msg);
+  };
+  // Sans réponse au bout de 15 s, on explique ce qui bloque au lieu de tourner en rond
+  const timeout = setTimeout(() => fail(step === 'server' ? BLOCKED_SERVER : BLOCKED_DIRECT), 15000);
   peer.on('open', () => {
+    step = 'direct';
     const conn = peer.connect(PREFIX + code.trim().toUpperCase(), { reliable: true });
     listen(conn);
-    conn.on('open', () => send({ t: 'hello', name }));
+    conn.on('open', () => {
+      step = 'ok';
+      clearTimeout(timeout);
+      send({ t: 'hello', name, skin: loadSkin() });
+    });
+    // PeerJS ferme la connexion quand le réseau refuse la liaison directe entre les deux navigateurs
+    conn.on('close', () => fail(BLOCKED_DIRECT));
+    conn.on('error', () => fail(BLOCKED_DIRECT));
   });
-  peer.on('error', (err) => {
-    if (!net.online) net.events.emit('error', errorText(err));
-  });
+  peer.on('error', (err) => fail(errorText(err)));
 }
+
+const BLOCKED_SERVER = 'Impossible de joindre le serveur de mise en relation (pas d\'internet, ou site bloqué par le réseau).';
+const BLOCKED_DIRECT = 'La partie existe, mais le réseau bloque la connexion directe entre vos deux ordinateurs (fréquent sur un wifi d\'école ou d\'entreprise). Essayez tous les deux sur le partage de connexion d\'un même téléphone, puis recréez une partie.';
 
 function errorText(err) {
   if (err.type === 'peer-unavailable') return 'Aucune partie avec ce code. Vérifie-le avec ton coéquipier.';
@@ -123,15 +143,15 @@ function receive(msg) {
     case 'hello': // l'hôte reçoit l'invité : la partie commence
       if (!net.host || net.online) return;
       net.role = 'tech';
-      net.mate = { name: cleanName(msg.name), role: 'enq', room: null, seen: Date.now() };
+      net.mate = { name: cleanName(msg.name), role: 'enq', skin: cleanSkin(msg.skin, DEFAULT_MATE_SKIN), room: null, seen: Date.now() };
       begin();
       state.reset(`${net.myName} & ${net.mate.name}`);
-      send({ t: 'start', data: state.data, hostName: net.myName });
+      send({ t: 'start', data: state.data, hostName: net.myName, hostSkin: loadSkin() });
       net.events.emit('start');
       return;
     case 'start': // l'invité reçoit l'état de départ
       net.role = 'enq';
-      net.mate = { name: cleanName(msg.hostName), role: 'tech', room: null, seen: Date.now() };
+      net.mate = { name: cleanName(msg.hostName), role: 'tech', skin: cleanSkin(msg.hostSkin, DEFAULT_MATE_SKIN), room: null, seen: Date.now() };
       begin();
       state.applySnapshot(msg.data);
       net.events.emit('start');

@@ -272,10 +272,54 @@ export class HubScene extends Phaser.Scene {
     this.walls.add(this.add.zone(878, 300, 22, 120).setOrigin(0));
 
     // plantes vertes
-    for (const [px, py] of [[115, 268], [885, 625]]) {
+    for (const [px, py] of [[115, 268], [885, 625], [545, 292], [220, 450]]) {
       g.fillStyle(0x8a5a35).fillCircle(px, py, 9);
       g.fillStyle(0x3f7d3a).fillCircle(px - 5, py - 4, 8).fillCircle(px + 5, py - 5, 8).fillCircle(px, py - 10, 8);
     }
+
+    // bancs contre le mur de l'amphi et de Callelongue (vus de dessus)
+    for (const [bx, by, bw] of [[150, 234, 70], [400, 234, 90], [300, 413, 80]]) {
+      g.fillStyle(0x6e5236).fillRect(bx, by, bw, 12);
+      g.lineStyle(1, 0x4a3524).lineBetween(bx, by + 4, bx + bw, by + 4).lineBetween(bx, by + 8, bx + bw, by + 8);
+      this.walls.add(this.add.zone(bx, by, bw, 12).setOrigin(0));
+    }
+
+    // poubelles (rondes, vues de dessus) et extincteurs rouges au pied des murs
+    for (const [tx, ty] of [[640, 282], [225, 300], [440, 418]]) {
+      g.fillStyle(0x4a525e).fillCircle(tx, ty, 8);
+      g.fillStyle(0x2a2f38).fillCircle(tx, ty, 5);
+      g.fillStyle(0xf0ece2).fillCircle(tx - 1, ty - 1, 2);
+    }
+    for (const [ex, ey] of [[106, 300], [595, 240], [888, 440], [678, 462]]) {
+      g.fillStyle(0xc0392b).fillCircle(ex, ey, 6);
+      g.fillStyle(0x222222).fillCircle(ex, ey, 2);
+    }
+
+    // affiches et panneau d'affichage sur les murs des salles
+    for (const [ax, ay, color] of [[260, 296, 0x3b6ea8], [430, 296, 0xc0392b], [270, 466, 0x2e9e5b], [490, 466, 0x8e6bd6], [600, 466, 0xc06a8a]]) {
+      g.fillStyle(0xf6f1e6).fillRect(ax, ay, 26, 5);
+      g.fillStyle(color).fillRect(ax, ay, 8, 5);
+    }
+    g.fillStyle(0xc49a6c).fillRect(330, 296, 70, 5); // panneau de liège
+    g.fillStyle(0xf6f1e6).fillRect(338, 296, 10, 4).fillRect(356, 296, 10, 4).fillRect(376, 296, 10, 4);
+
+    // fontaine à eau entre Sormiou et le point repas
+    g.fillStyle(0xdfe6ea).fillRect(655, 590, 28, 28);
+    g.fillStyle(0x6fb6e0).fillCircle(669, 602, 8);
+    this.walls.add(this.add.zone(655, 590, 28, 28).setOrigin(0));
+
+    // chariot de ménage du gardien, garé près de son local
+    g.fillStyle(0x3a6ea8).fillRect(848, 232, 30, 22);
+    g.fillStyle(0xe0e0e0).fillCircle(857, 243, 6);
+    g.fillStyle(0x8a5a35).fillRect(868, 236, 3, 14);
+    // panneau « sol glissant » (jaune, comme dans tous les couloirs d'école)
+    g.fillStyle(0xf5c84c).fillTriangle(760, 330, 772, 352, 748, 352);
+    g.fillStyle(0x222222).fillRect(759, 338, 2, 8);
+
+    // paillasson devant la sortie
+    g.fillStyle(0x5a3f2c).fillRect(30, 318, 34, 54);
+    g.lineStyle(1, 0x3e2b1e);
+    for (let y = 322; y < 370; y += 6) g.lineBetween(32, y, 62, y);
   }
 
   drawExit() {

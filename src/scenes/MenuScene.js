@@ -5,6 +5,8 @@ import { loadBoard } from '../state/leaderboard.js';
 import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../ui/theme.js';
 import { setAmbience, toggleMute, isMuted } from '../audio/sound.js';
 import { net, ROLES, hostGame, joinGame, leave } from '../net/multiplayer.js';
+import { createCharacter, drawPreview } from '../art/characters.js';
+import { SKIN_OPTIONS, loadSkin, saveSkin, paletteFromSkin } from '../art/skins.js';
 
 // Le menu est écrit à la craie sur un tableau noir.
 export class MenuScene extends Phaser.Scene {
@@ -32,6 +34,7 @@ export class MenuScene extends Phaser.Scene {
 
     const entries = [{ label: 'Nouvelle partie', action: () => this.newGame() }, { label: 'Jouer à 2 (en ligne)', action: () => this.duo() }];
     if (state.hasSave()) entries.push({ label: 'Continuer', action: () => this.continueGame() });
+    entries.push({ label: 'Mon élève', action: () => this.chooseSkin() });
     entries.push({ label: 'Classement', action: () => this.showBoard() });
 
     // bouton son, en haut à droite du tableau
@@ -41,7 +44,7 @@ export class MenuScene extends Phaser.Scene {
     this.muteBtn.on('pointerdown', () => toggleMute());
 
     entries.forEach((e, i) => {
-      chalkButton(this, width / 2, 250 + i * 62, e.label, () => !isDialogOpen() && e.action());
+      chalkButton(this, width / 2, 240 + i * 58, e.label, () => !isDialogOpen() && e.action());
     });
 
     txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  M : son  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {
@@ -95,6 +98,7 @@ export class MenuScene extends Phaser.Scene {
     net.events.off('start');
     net.events.once('start', () => {
       net.events.off('error');
+      createCharacter(this, 'mate', paletteFromSkin(net.mate.skin), true); // le coéquipier avec son skin
       closeDialog();
       this.scene.start('Intro');
     });
@@ -126,6 +130,68 @@ export class MenuScene extends Phaser.Scene {
         this.waitForStart();
         joinGame(code, name);
       },
+    });
+  }
+
+  // ---------- Skin de l'élève ----------
+  chooseSkin() {
+    const skin = loadSkin();
+    const wrap = document.createElement('div');
+    const preview = document.createElement('canvas');
+    preview.className = 'skin-preview';
+    preview.setAttribute('role', 'img');
+    preview.setAttribute('aria-label', 'Aperçu de ton élève');
+    wrap.appendChild(preview);
+    const redraw = () => drawPreview(preview, paletteFromSkin(skin));
+
+    for (const opt of SKIN_OPTIONS) {
+      const row = document.createElement('div');
+      row.className = 'skin-row';
+      row.innerHTML = `<span>${opt.label}</span>`;
+      for (const [id, val] of opt.choices) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = typeof val === 'number' ? 'swatch' : 'swatch text';
+        if (typeof val === 'number') b.style.background = `#${val.toString(16).padStart(6, '0')}`;
+        else b.textContent = val;
+        b.title = id;
+        b.setAttribute('aria-label', `${opt.label} : ${id}`);
+        b.setAttribute('aria-pressed', String(skin[opt.key] === id));
+        b.addEventListener('click', () => {
+          skin[opt.key] = id;
+          row.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          redraw();
+        });
+        row.appendChild(b);
+      }
+      wrap.appendChild(row);
+    }
+    redraw();
+
+    const random = () => {
+      for (const opt of SKIN_OPTIONS) skin[opt.key] = opt.choices[Math.floor(Math.random() * opt.choices.length)][0];
+      wrap.querySelectorAll('.skin-row').forEach((row, i) => {
+        row.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x.title === skin[SKIN_OPTIONS[i].key])));
+      });
+      redraw();
+    };
+
+    openDialog({
+      title: 'Mon élève',
+      body: wrap,
+      buttons: [
+        {
+          label: 'Enregistrer',
+          primary: true,
+          onClick: () => {
+            saveSkin(skin);
+            createCharacter(this, 'player', paletteFromSkin(skin), true);
+            closeDialog();
+            this.scene.restart();
+          },
+        },
+        { label: '🎲 Au hasard', onClick: random },
+      ],
     });
   }
 

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { createCharacter, PLAYER_PALETTE, MATE_PALETTE, GUARD_PALETTE } from '../art/characters.js';
+import { createCharacter, GUARD_PALETTE } from '../art/characters.js';
+import { loadSkin, paletteFromSkin, DEFAULT_MATE_SKIN } from '../art/skins.js';
 
 // Prépare tout ce qui est graphique (aucun fichier image : tout est généré en code)
 // et attend le chargement des polices avant d'afficher le menu.
@@ -9,8 +10,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    createCharacter(this, 'player', PLAYER_PALETTE);
-    createCharacter(this, 'mate', MATE_PALETTE);
+    createCharacter(this, 'player', paletteFromSkin(loadSkin())); // le skin choisi dans le menu
+    createCharacter(this, 'mate', paletteFromSkin(DEFAULT_MATE_SKIN)); // remplacé par celui du coéquipier
     createCharacter(this, 'guard', GUARD_PALETTE);
     this.makeLightTexture();
     this.makeFlashTexture();

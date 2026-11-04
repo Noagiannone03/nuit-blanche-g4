@@ -20,7 +20,8 @@
 
 Tous les graphismes actuels sont **dessinés en code**, aucune image externe :
 - personnages en pixel art (élève, coéquipier, gardien) : `src/art/characters.js`
-- mobilier des salles (tableaux, bureaux, casiers, frigo…) : `src/art/furniture.js`
+- mobilier des salles (tableaux, bureaux, casiers, frigo…) : `src/art/furniture.js`, décor (fenêtres, étagères, affiches, chaises…) : `src/art/decor.js`
+- skins de l'élève (couleurs et coiffures au choix) : `src/art/skins.js`
 - couloir vu de dessus, ambiance de nuit, lumières : `src/scenes/HubScene.js`, `src/ui/theme.js`, `src/scenes/BootScene.js`
 - intérieur des salles : `src/scenes/RoomScene.js`, `src/rooms/*.js`
 

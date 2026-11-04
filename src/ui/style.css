@@ -223,6 +223,56 @@ body {
   color: var(--green);
 }
 
+/* Choix du skin (menu « Mon élève ») */
+.skin-preview {
+  display: block;
+  margin: 0 auto 12px;
+  image-rendering: pixelated;
+  background: #e9e2d2;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.skin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.skin-row span {
+  width: 90px;
+  font-weight: 800;
+}
+
+.dialog .skin-row .swatch {
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px #8a7a68;
+}
+
+.dialog .skin-row .swatch.text {
+  width: auto;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  background: #fff;
+}
+
+.dialog .skin-row .swatch[aria-pressed='true'] {
+  box-shadow: 0 0 0 3px var(--green);
+}
+
+.dialog .skin-row .swatch.text[aria-pressed='true'] {
+  color: #fff;
+  background: var(--green);
+}
+
 /* Boîtier à interrupteurs (Mont Ventoux) */
 .switches {
   display: flex;

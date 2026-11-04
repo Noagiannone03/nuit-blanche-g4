@@ -60,6 +60,17 @@ export default {
   domain: 'Algorithmique / code',
   color: 0x1f3b3a,
   intro: 'Les écrans sont en veille. Un seul PC est resté allumé.',
+  decor: [
+    { type: 'windowNight', x: 160, y: 150, w: 110, h: 120 },
+    { type: 'radiator', x: 165, y: 336, w: 100, h: 30 },
+    { type: 'poster', x: 640, y: 160, w: 80, h: 100, color: 0x2e9e5b, text: 'while(1)' },
+    { type: 'poster', x: 760, y: 190, w: 80, h: 100, color: 0x3b6ea8, text: 'Git' },
+    { type: 'serverRack', x: 18, y: 260, w: 66, h: 220 },
+    { type: 'studentPc', x: 290, y: 420, w: 120, h: 90 },
+    { type: 'studentPc', x: 440, y: 420, w: 120, h: 90 },
+    { type: 'chairs', x: 300, y: 520, w: 260, h: 56, color: 0x3a4a6a },
+    { type: 'bin', x: 250, y: 575, w: 30, h: 40 },
+  ],
   objects: [
     {
       label: 'PC du formateur',
