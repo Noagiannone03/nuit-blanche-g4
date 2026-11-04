@@ -363,6 +363,42 @@ body {
   background: var(--green);
 }
 
+/* Pavé numérique de la porte de sortie */
+.keypad-screen {
+  margin: 8px auto;
+  width: 200px;
+  padding: 8px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 1.8rem;
+  letter-spacing: 0.1em;
+  color: #3dff7a;
+  background: #111;
+  border-radius: 6px;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 8px;
+  justify-content: center;
+}
+
+.dialog .keypad button {
+  height: 52px;
+  font-size: 1.4rem;
+}
+
+.dialog .keypad button.ok {
+  color: #fff;
+  background: var(--green);
+}
+
+.dialog .keypad button.cancel {
+  color: #fff;
+  background: var(--red);
+}
+
 /* Boîtier à interrupteurs (Mont Ventoux) */
 .switches {
   display: flex;

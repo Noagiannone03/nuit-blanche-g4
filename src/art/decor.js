@@ -191,7 +191,9 @@ const DRAWERS = {
   },
 };
 
-/** Dessine un élément de décor ; text (facultatif) est écrit par l'appelant. */
+/** Dessine un élément de décor ; text (facultatif) est écrit par l'appelant. Renvoie false si le type n'existe pas. */
 export function drawDecor(g, item) {
-  DRAWERS[item.type]?.(g, item.x, item.y, item.w, item.h, item.color);
+  const draw = DRAWERS[item.type];
+  draw?.(g, item.x, item.y, item.w, item.h, item.color);
+  return !!draw;
 }

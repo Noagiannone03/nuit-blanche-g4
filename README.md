@@ -7,7 +7,7 @@ Il a jusqu'à **9h00** (environ 20 minutes réelles) pour trouver le code de la 
 
 ## ▶️ Jouer (jury)
 
-**URL publique : https://<compte>.github.io/<depot>/** ← à compléter après le premier déploiement
+**URL publique : https://nuit-blanche-g4.vercel.app/
 
 Aucune installation nécessaire : un navigateur récent (Chrome, Firefox, Edge, Safari), sur ordinateur ou mobile.
 
@@ -120,10 +120,9 @@ Chaque push sur `main` déploie automatiquement sur GitHub Pages (`.github/workf
 ## 👥 Équipe
 
 | Membre | Rôle |
-|---|---|
-| … | Chef de projet |
-| … | Game designer & scénariste |
-| … | Lead développeur |
-| … | Développeur |
-| … | Graphiste & UX |
-| … | Responsable qualité & passation |
+
+| Rayane | Chef de projet |
+| Nassim | Game designer & scénariste |
+| Ilian | Développeur |
+| Noa | Graphiste & UX |
+| Benoit | Responsable qualité & passation |

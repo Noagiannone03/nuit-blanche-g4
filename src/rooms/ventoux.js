@@ -1,7 +1,6 @@
 import { state } from '../state/GameState.js';
 import { openDialog } from '../ui/dialog.js';
 import { CIRCUIT_TEXT, lamp } from '../puzzles/logique.js';
-import { PC_PASSWORD } from '../puzzles/algorithmique.js';
 import { ROOM_DIGITS } from '../puzzles/code.js';
 import { decorHint, lockedDialog } from './helpers.js';
 import { PENALTY_ERROR } from '../config.js';
@@ -9,11 +8,10 @@ import { startPatrol } from '../state/patrol.js';
 import { sfx } from '../audio/sound.js';
 
 // 2e énigme : il faut la clé de l'armoire (casier de Sormiou).
-// Tester la lampe avec la bonne combinaison rétablit le courant : plus besoin du flash… mais le gardien
-// est alerté et commence ses rondes. On peut aussi donner le chiffre sans tester : on reste dans le noir.
-// Une fois le chiffre trouvé, le vidéoprojecteur affiche le mot de passe du PC de Callelongue.
-
-const SLIDE = `<p>Le vidéoprojecteur affiche la dernière diapo de ton équipe :</p><p class="hand">Accès salle Callelongue<br>Session : Callelongue — mdp : <strong>${PC_PASSWORD}</strong></p>`;
+// Le boîtier : trouver la combinaison qui allume la lampe (LAMPE = 1), puis lire ABC en binaire.
+// Le disjoncteur général est à part : le joueur choisit s'il remet la lumière. On ne lui dit pas
+// ce qui se passe ensuite : le courant revient dans toute l'école… et le gardien commence ses rondes.
+// Sans courant, le PC de Callelongue reste éteint : il faudra le remettre tôt ou tard.
 
 /** Le courant revient : il éclaire toute l'école… et réveille le gardien. */
 function restorePower() {
@@ -26,37 +24,31 @@ function restorePower() {
 
 function openSwitchBox() {
   if (!state.hasItem('cle-armoire')) {
-    lockedDialog('Boîtier électrique', '<p>La porte de l\'armoire est fermée à clé. Une étiquette : <em>« Double de la clé : casier de la salle Sormiou. »</em></p>');
+    lockedDialog('Boîtier électrique', '<p>Fermé à clé.</p>');
     return;
   }
-  const lit = state.hasItem('courant');
   if (state.data.solved.ventoux) {
-    const light = lit
-      ? 'La lampe est allumée, le courant est rétabli.'
-      : 'Tu as laissé la lumière éteinte : le gardien dort toujours. Seul le circuit de secours (vidéoprojecteur) est réarmé.';
-    openDialog({ title: 'Boîtier électrique', body: `<p><strong>✓ Déjà résolu : ${state.data.digits.ventoux}</strong></p><p>${light}</p>` });
+    openDialog({ title: 'Boîtier électrique', body: `<p><strong>✓ Déjà résolu : ${state.data.digits.ventoux}</strong></p>` });
     return;
   }
 
   // Interrupteurs, lampe et chiffre dans la même boîte. La lampe ne réagit pas toute seule :
-  // on peut la tester (erreur = pénalité, réussite = lumière + gardien réveillé)
-  // ou, si on est sûr de soi, donner directement le chiffre et rester dans le noir.
-  const values = { A: lit, B: false, C: lit };
+  // on la teste (erreur = pénalité), et on tape le chiffre lu en binaire.
+  const values = { A: false, B: false, C: false };
   const wrap = document.createElement('div');
   wrap.innerHTML = '<p>La clé tourne. Trois interrupteurs et une lampe. Une étiquette : <em>« ABC, lu en binaire »</em>.</p>';
   const row = document.createElement('div');
   row.className = 'switches';
   const bulb = document.createElement('div');
-  bulb.className = lit ? 'lamp on' : 'lamp';
+  bulb.className = 'lamp';
   bulb.setAttribute('role', 'img');
-  bulb.setAttribute('aria-label', lit ? 'Lampe allumée' : 'Lampe éteinte');
+  bulb.setAttribute('aria-label', 'Lampe éteinte');
 
   const buttons = ['A', 'B', 'C'].map((key) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.disabled = lit;
-    btn.setAttribute('aria-pressed', String(values[key]));
-    btn.textContent = `${key} = ${values[key] ? 1 : 0}`;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.textContent = `${key} = 0`;
     btn.addEventListener('click', () => {
       sfx.toggle();
       values[key] = !values[key];
@@ -68,36 +60,31 @@ function openSwitchBox() {
   });
   row.appendChild(bulb);
   wrap.appendChild(row);
-  wrap.insertAdjacentHTML(
-    'beforeend',
-    lit
-      ? '<p>La lampe est allumée. Quel chiffre ouvre la suite du code ?</p>'
-      : '<p>Tu peux tester la lampe (<strong>chaque essai raté coûte du temps</strong>, et la lumière risque de réveiller le gardien)… ou, si tu es sûr de toi, donner directement le chiffre et rester dans le noir.</p>',
-  );
+  wrap.insertAdjacentHTML('beforeend', '<p>Tu peux tester la lampe (<strong>chaque essai raté coûte du temps</strong>).</p>');
 
   const ui = openDialog({
     title: 'Boîtier électrique',
     body: wrap,
     input: { placeholder: 'Chiffre (0-7)', maxLength: 2, numeric: true },
     onSubmit: (value) => submitDigit(value),
-    buttons: lit ? [] : [{ label: 'Tester la lampe', onClick: () => test() }],
+    buttons: [{ label: 'Tester la lampe', onClick: () => test() }],
   });
 
   function test() {
-    if (state.hasItem('courant')) return;
+    if (bulb.classList.contains('on')) return;
     if (!lamp(values.A, values.B, values.C)) {
       state.penalize();
       ui.feedback(`Clac… la lampe reste éteinte. +${PENALTY_ERROR} min.`);
       return;
     }
-    // Bonne combinaison : la lampe s'allume et le courant revient, mais le chiffre n'est pas donné
+    // Bonne combinaison : seule la lampe du boîtier s'allume (le chiffre n'est pas donné)
+    sfx.success();
     bulb.classList.add('on');
     bulb.setAttribute('aria-label', 'Lampe allumée');
     buttons.forEach((b) => (b.disabled = true));
     ui.box.querySelector('.actions button')?.remove(); // plus de « Tester la lampe »
     ui.box.querySelector('input')?.focus(); // garde le curseur dans la boîte (sinon Échap ne la ferme plus)
-    ui.feedback('La lampe s\'allume ! Le courant revient dans toute l\'école… au loin, une porte claque : le gardien commence ses rondes.', 'ok');
-    restorePower();
+    ui.feedback('La lampe s\'allume !', 'ok');
   }
 
   function submitDigit(value) {
@@ -108,12 +95,36 @@ function openSwitchBox() {
     }
     state.solve('ventoux', ROOM_DIGITS.ventoux);
     ui.close();
-    const dark = state.hasItem('courant')
-      ? ''
-      : '<p>Les néons restent éteints : <strong>le gardien n\'a rien vu</strong>. Mais le circuit de secours se réarme : au fond de l\'amphi, le vidéoprojecteur redémarre sur l\'onduleur.</p>';
-    openDialog({ title: 'Bien joué !', body: `<p>Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p>${dark}` });
+    openDialog({ title: 'Bien joué !', body: `<p>Le tableau électrique affiche en grand : <strong>${ROOM_DIGITS.ventoux}</strong>.</p>` });
     sfx.success();
   }
+}
+
+/** Le disjoncteur général : remettre la lumière ou non, c'est le choix du joueur. */
+function openBreaker() {
+  if (state.hasItem('courant')) {
+    openDialog({ title: 'Disjoncteur général', body: '<p>Le levier est en position haute. Les néons bourdonnent.</p>' });
+    return;
+  }
+  if (!state.hasItem('cle-armoire')) {
+    lockedDialog('Disjoncteur général', '<p>Fermé à clé.</p>');
+    return;
+  }
+  openDialog({
+    title: 'Disjoncteur général',
+    body: '<p>Un gros levier rouge, en position basse. Une étiquette : <em>« GÉNÉRAL »</em>.</p>',
+    buttons: [
+      {
+        label: 'Remonter le levier',
+        primary: true,
+        onClick: (ui) => {
+          ui.close();
+          restorePower();
+          openDialog({ title: 'Disjoncteur général', body: '<p><strong>Clac !</strong> Les néons grésillent… et toute l\'école s\'allume.</p>' });
+        },
+      },
+    ],
+  });
 }
 
 export default {
@@ -125,12 +136,11 @@ export default {
   decor: [
     { type: 'windowNight', x: 515, y: 150, w: 115, h: 120 },
     { type: 'radiator', x: 520, y: 345, w: 105, h: 38 },
-    { type: 'poster', x: 805, y: 215, w: 72, h: 95, color: 0x8e6bd6, text: 'ET / OU' },
     { type: 'exitSign', x: 20, y: 150, w: 70, h: 26 },
     { type: 'amphiSeats', x: 15, y: 404, w: 150, h: 46 },
     { type: 'amphiSeats', x: 445, y: 404, w: 180, h: 46 },
     { type: 'bin', x: 40, y: 560, w: 34, h: 44 },
-    { type: 'plant', x: 860, y: 430, w: 70, h: 100 },
+    { type: 'plant', x: 690, y: 430, w: 64, h: 95 },
     { type: 'backpack', x: 470, y: 570, w: 40, h: 46 },
   ],
   objects: [
@@ -163,23 +173,16 @@ export default {
       },
     },
     {
-      label: 'Vidéoprojecteur',
-      role: 'enq',
-      type: 'projector',
-      x: 720, y: 480, w: 170, h: 100, color: 0x3a3f47,
-      onUse() {
-        // il marche avec le courant… ou sur l'onduleur une fois le boîtier résolu dans le noir
-        if (!state.hasItem('courant') && !state.data.solved.ventoux) {
-          openDialog({ title: 'Vidéoprojecteur', body: '<p>Pas de courant dans l\'amphi : l\'écran reste noir.</p>' });
-          return;
-        }
-        openDialog({ title: 'Présentation projetée', body: `${SLIDE}<p><em>Tu prends une photo avec ton téléphone.</em></p>` });
-      },
+      label: 'Disjoncteur général',
+      role: 'tech',
+      type: 'breaker',
+      x: 860, y: 400, w: 72, h: 100, color: 0x6c7482,
+      onUse: openBreaker,
     },
   ],
   hints: [
     'L\'armoire électrique est fermée à clé : la clé est dans le casier à code de la salle Sormiou.',
     'Le but est LAMPE = 1 : P2, P3 et P4 doivent toutes valoir 1. Commence par P3 : que doit valoir B ?',
-    'B = 0. Ensuite P4 impose C = 1, et P1 impose A = 1 : A = 1, B = 0, C = 1. Lis 101 en binaire avec le mémo du bureau (colonnes 4, 2, 1). Tu peux taper le chiffre sans tester la lampe pour ne pas réveiller le gardien.',
+    'B = 0. Ensuite P4 impose C = 1, et P1 impose A = 1 : A = 1, B = 0, C = 1. Lis 101 en binaire avec le mémo du bureau (colonnes 4, 2, 1).',
   ],
 };

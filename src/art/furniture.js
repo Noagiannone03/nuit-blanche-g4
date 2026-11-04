@@ -1,6 +1,7 @@
 // Mobilier des salles vu de face, dessiné en code.
 // Chaque fonction reçoit un Graphics et le rectangle (x, y = coin haut-gauche ; w, h).
 import { C } from '../ui/theme.js';
+import { drawDecor } from './decor.js';
 
 const DRAWERS = {
   // Tableau blanc avec quelques gribouillis de feutre
@@ -69,6 +70,15 @@ const DRAWERS = {
     g.fillStyle(0x3d7fd0).fillRect(x + 18, y + 8, w - 36, h - 66);
     g.fillStyle(0xffffff, 0.8);
     for (let i = 0; i < 4; i++) g.fillRect(x + 28, y + 18 + i * 12, (w - 70) * (0.4 + 0.15 * i), 4);
+    g.fillStyle(0x1e2229).fillRect(x + w / 2 - 8, y + h - 50, 16, 16).fillRect(x + w / 2 - 30, y + h - 36, 60, 8);
+  },
+
+  // Le même PC, éteint (pas de courant)
+  pcOff(g, x, y, w, h) {
+    g.fillStyle(C.wood).fillRect(x - 20, y + h - 26, w + 40, 14);
+    g.fillStyle(C.woodDark).fillRect(x - 10, y + h - 12, 10, 12).fillRect(x + w, y + h - 12, 10, 12);
+    g.fillStyle(0x1e2229).fillRect(x + 10, y, w - 20, h - 50);
+    g.fillStyle(0x0d0f14).fillRect(x + 18, y + 8, w - 36, h - 66);
     g.fillStyle(0x1e2229).fillRect(x + w / 2 - 8, y + h - 50, 16, 16).fillRect(x + w / 2 - 30, y + h - 36, 60, 8);
   },
 
@@ -169,6 +179,15 @@ const DRAWERS = {
     for (let i = 1; i < 5; i++) g.lineBetween(x + (i * w) / 5, y - 6, x + (i * w) / 5, y + h - 24);
   },
 
+  // Disjoncteur général : un coffret avec un gros levier (en bas = coupé)
+  breaker(g, x, y, w, h) {
+    g.fillStyle(0x6c7482).fillRect(x, y, w, h);
+    g.fillStyle(0x4a505c).fillRect(x + 8, y + 8, w - 16, h - 16);
+    g.fillStyle(0x2a2e36).fillRect(x + w / 2 - 6, y + 20, 12, h - 40);
+    g.fillStyle(0xc0392b).fillRoundedRect(x + w / 2 - 16, y + h - 46, 32, 18, 4);
+    g.fillStyle(0xf0ece2).fillRect(x + 12, y + 12, w - 24, 8);
+  },
+
   // Fenêtre de nuit avec la lune
   window(g, x, y, w, h) {
     g.fillStyle(0xf0ece2).fillRect(x, y, w, h);
@@ -183,5 +202,6 @@ const DRAWERS = {
 export function drawFurniture(g, type, x, y, w, h) {
   const draw = DRAWERS[type];
   if (draw) draw(g, x, y, w, h);
-  else g.fillStyle(C.wood).fillRect(x, y, w, h);
+  // sinon : un élément du décor (borne d'arcade, distributeur, pouf…) qui devient un objet utilisable
+  else if (!drawDecor(g, { type, x, y, w, h })) g.fillStyle(C.wood).fillRect(x, y, w, h);
 }

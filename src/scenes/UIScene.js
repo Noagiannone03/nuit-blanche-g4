@@ -189,26 +189,32 @@ export class UIScene extends Phaser.Scene {
   showHint() {
     if (isDialogOpen()) return;
     const roomKey = state.data.currentRoom;
+    const key = roomKey || 'hub';
     const hints = roomKey ? ROOMS[roomKey].hints : HUB_HINTS;
+    const seen = state.data.hintsByRoom[key] || 0;
+    // les indices déjà lus restent consultables, gratuitement
+    const previous = seen
+      ? `<ol>${hints.slice(0, seen).map((h) => `<li>${h}</li>`).join('')}</ol>`
+      : '';
     if (roomKey && state.data.solved[roomKey]) {
-      openDialog({ title: 'Indice', body: '<p>Tu as déjà résolu l\'énigme de cette salle.</p>' });
+      openDialog({ title: 'Indices', body: `<p>Tu as déjà résolu l'énigme de cette salle.</p>${previous}` });
       return;
     }
-    const seen = state.data.hintsByRoom[roomKey || 'hub'] || 0;
     if (seen >= hints.length) {
-      openDialog({ title: 'Indice', body: `<p>${hints[hints.length - 1]}</p><p><em>(Plus d'autre indice ici.)</em></p>` });
+      openDialog({ title: 'Indices', body: `${previous}<p><em>(Plus d'autre indice ici.)</em></p>` });
       return;
     }
-    const cost = state.data.freeHints > 0 ? 'gratuit (carnet du gardien)' : `+${PENALTY_HINT} min`;
+    const cost = state.data.freeHints > 0 ? 'gratuit (carnet)' : `+${PENALTY_HINT} min`;
+    const intro = seen ? `<p>Indices déjà lus :</p>${previous}` : '';
     openDialog({
       title: 'Besoin d\'un indice ?',
-      body: `<p>Indice ${seen + 1}/${hints.length} — coût : <strong>${cost}</strong>.</p>`,
+      body: `${intro}<p>Indice ${seen + 1}/${hints.length} — coût : <strong>${cost}</strong>.</p>`,
       buttons: [
         {
-          label: 'Lire l\'indice',
+          label: seen ? 'Lire l\'indice suivant' : 'Lire l\'indice',
           primary: true,
           onClick: () => {
-            const h = state.useHint(roomKey || 'hub', hints);
+            const h = state.useHint(key, hints);
             sfx.hint();
             openDialog({ title: `Indice ${seen + 1}`, body: `<p>${h.text}</p>` });
           },

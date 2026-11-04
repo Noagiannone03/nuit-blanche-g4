@@ -3,6 +3,8 @@
 // il n'y en a que 2, perdus au milieu des autres couleurs (dont l'orange, pour piéger l'œil).
 // Coordonnées dans la scène (x, y), couleur, rotation en degrés.
 
+import { PC_PASSWORD } from './algorithmique.js';
+
 export const POSTIT_COLORS = {
   yellow: 0xffd84d,
   orange: 0xff9b3d,
@@ -12,10 +14,11 @@ export const POSTIT_COLORS = {
   purple: 0xb99cff,
 };
 
-// Les 2 seuls post-it jaunes
+// Les 2 seuls post-it jaunes ; on peut les lire en cliquant dessus (note).
+// L'un d'eux porte le mot de passe du PC de Callelongue, sans dire à quoi il sert.
 const YELLOW = [
-  { x: 140, y: 560, color: 'yellow', angle: -4 }, // près de la plante
-  { x: 905, y: 330, color: 'yellow', angle: 3 }, // sur le mur de droite
+  { x: 140, y: 560, color: 'yellow', angle: -4, note: `mdp : ${PC_PASSWORD}` }, // près de la plante
+  { x: 905, y: 330, color: 'yellow', angle: 3, note: 'Idée validée : on finit TOUJOURS par un commit !' }, // sur le mur de droite
 ];
 
 // Les leurres : placés "au hasard", mais toujours au même endroit d'une partie à l'autre

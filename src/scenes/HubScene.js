@@ -477,7 +477,7 @@ export class HubScene extends Phaser.Scene {
       state.addItem('carnet-gardien');
       openDialog({
         title: 'Salle de détente',
-        body: '<p>Le canapé te fait de l\'œil… Pas le moment de se rendormir.</p><p>Sous un coussin, tu trouves le carnet du gardien, plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
+        body: '<p>Le canapé te fait de l\'œil… Pas le moment de se rendormir.</p><p>Sous un coussin, tu trouves un vieux carnet plein de notes sur l\'école : <strong>ton prochain indice sera gratuit</strong>.</p>',
       });
       return;
     }
@@ -485,6 +485,57 @@ export class HubScene extends Phaser.Scene {
       title: 'Salle de détente',
       body: '<p>Le canapé te fait de l\'œil… Pas le moment de se rendormir.</p>',
     });
+  }
+
+  /** Pavé numérique de la porte : on clique les chiffres, A pour valider, B pour abandonner. */
+  exitKeypad() {
+    let code = '';
+    const wrap = document.createElement('div');
+    wrap.innerHTML = '<p>Un boîtier à 4 chiffres. Un voyant rouge clignote.</p>';
+    const screen = document.createElement('div');
+    screen.className = 'keypad-screen';
+    screen.setAttribute('aria-live', 'polite');
+    const pad = document.createElement('div');
+    pad.className = 'keypad';
+    wrap.append(screen, pad);
+    const show = () => (screen.textContent = code.padEnd(4, '_').split('').join(' '));
+    show();
+
+    const ui = openDialog({ title: 'Porte de sortie', body: wrap, closable: false });
+    const press = (k) => {
+      if (k === 'B') {
+        ui.close();
+        return;
+      }
+      if (k === 'A') {
+        if (code === EXIT_CODE) {
+          sfx.success();
+          endGame(this, true, 'escaped');
+          return;
+        }
+        state.penalize();
+        this.cameras.main.shake(250, 0.01);
+        ui.feedback(`BIP ! Code refusé. +${PENALTY_ERROR} min.`);
+        code = '';
+        show();
+        return;
+      }
+      if (code.length >= 4) return;
+      sfx.beep(code.length);
+      code += k;
+      show();
+    };
+    for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'B', '0', 'A']) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = k;
+      if (k === 'A') b.className = 'ok';
+      if (k === 'B') b.className = 'cancel';
+      b.setAttribute('aria-label', k === 'A' ? 'A : valider' : k === 'B' ? 'B : quitter' : k);
+      b.addEventListener('click', () => press(k));
+      pad.appendChild(b);
+    }
+    pad.insertAdjacentHTML('afterend', '<p><em>A : valider · B : quitter</em></p>');
   }
 
   tryExit() {
@@ -497,22 +548,7 @@ export class HubScene extends Phaser.Scene {
       });
       return;
     }
-    openDialog({
-      title: 'Porte de sortie',
-      body: '<p>Un boîtier à 4 chiffres. Un voyant rouge clignote.</p>',
-      input: { placeholder: '_ _ _ _', maxLength: 4, numeric: true },
-      submitLabel: 'Composer',
-      onSubmit: (value, ui) => {
-        [...value].forEach((_, i) => sfx.beep(i));
-        if (value === EXIT_CODE) {
-          endGame(this, true, 'escaped');
-        } else {
-          state.penalize();
-          this.cameras.main.shake(250, 0.01);
-          ui.feedback(`BIP ! Code refusé. +${PENALTY_ERROR} min.`);
-        }
-      },
-    });
+    this.exitKeypad();
   }
 
   // ---------- Le gardien (rondes lancées quand le courant revient) ----------

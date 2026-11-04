@@ -53,3 +53,29 @@ export function decorHint(id, title, body) {
 export function lockedDialog(title, body) {
   openDialog({ title: `${title} — verrouillé`, body });
 }
+
+/**
+ * Un équipement inutile (baby-foot, borne d'arcade…) : on peut s'en servir, mais ça fait perdre du temps.
+ * needsPower : il ne marche qu'une fois le courant rétabli (sinon on affiche off).
+ */
+export function timeWaster({ title, intro, action, result, minutes, needsPower = false, off = '' }) {
+  if (needsPower && !state.hasItem('courant')) {
+    openDialog({ title, body: off });
+    return;
+  }
+  openDialog({
+    title,
+    body: intro,
+    buttons: [
+      {
+        label: action,
+        primary: true,
+        onClick: () => {
+          state.addMinutes(minutes);
+          state.save();
+          openDialog({ title, body: `${result}<p><em>Le temps a filé… il est déjà ${state.clock}.</em></p>` });
+        },
+      },
+    ],
+  });
+}
