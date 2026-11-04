@@ -10,6 +10,7 @@ import { endGame } from './endGame.js';
 import { tickPatrol } from '../state/patrol.js';
 import { sfx, toggleMute, isMuted } from '../audio/sound.js';
 import { net, ROLES } from '../net/multiplayer.js';
+import { isTouch, toggleFullscreen } from '../ui/touch.js';
 
 const DIGIT_ROOMS = ['ventoux', 'callelongue', 'stevictoire', 'sormiou'];
 const SHORT = { ventoux: 'Ventoux', callelongue: 'Callel.', stevictoire: 'Ste Vic.', sormiou: 'Sormiou' };
@@ -44,7 +45,7 @@ export class UIScene extends Phaser.Scene {
     this.orderText = txt(this, 670, TOP_BAR / 2, '', { size: 13, weight: '800', color: 0xd8cbb8 }).setOrigin(0, 0.5);
 
     // bouton indice en forme de post-it
-    const hintBtn = txt(this, width - 14, TOP_BAR / 2, 'H · Indice ?', {
+    const hintBtn = txt(this, width - 14, TOP_BAR / 2, isTouch() ? 'Indice ?' : 'H · Indice ?', {
       size: 22, font: FONT_HAND, weight: '600', color: C.ink, backgroundColor: hex(0xffe97a), padding: { x: 10, y: 2 },
     })
       .setOrigin(1, 0.5)
@@ -149,6 +150,7 @@ export class UIScene extends Phaser.Scene {
       title: 'Pause',
       body: `${intro}
         <table><tbody>
+          <tr><td>Sur téléphone / tablette</td><td>joystick en bas à gauche pour bouger, ✋ pour agir, toucher un objet pour l'utiliser, « Indice ? » en haut à droite</td></tr>
           <tr><td>Se déplacer</td><td>Flèches ou ZQSD, ou clic / toucher</td></tr>
           <tr><td>Entrer, utiliser</td><td>E ou Entrée · touches 1, 2, 3, 4 dans une salle</td></tr>
           <tr><td>Indice</td><td>H</td></tr>
@@ -164,6 +166,7 @@ export class UIScene extends Phaser.Scene {
             ui.box.querySelectorAll('.actions button')[1].textContent = toggleMute() ? '🔇 Son coupé' : '🔊 Son activé';
           },
         },
+        ...(this.scale.fullscreen.available ? [{ label: '⛶ Plein écran', onClick: () => toggleFullscreen(this) }] : []),
         { label: net.online ? 'Quitter la partie' : 'Sauvegarder et quitter', onClick: () => this.quitToMenu() },
       ],
       onClose: () => {

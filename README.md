@@ -75,6 +75,15 @@ Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien
 - Sauvegarde automatique (navigateur) : « Sauvegarder et quitter » dans la pause, puis « Continuer » dans le menu.
 - Score = 1000 − minutes écoulées − 50 × indices − 30 × erreurs ; classement des 10 meilleurs (local au navigateur).
 
+## 📱 Version mobile
+
+Le jeu se joue aussi sur téléphone et tablette, **en mode paysage**. En portrait, un écran demande de tourner le téléphone.
+- **Dans le couloir** : un joystick en bas à gauche pour bouger, et un bouton ✋ à droite pour agir (entrer dans une salle, la porte de sortie…). On peut aussi toucher une porte pour y aller.
+- **Dans les salles** : on touche un objet pour l'utiliser, « ← couloir » pour sortir. Dans le noir, le flash suit le doigt.
+- Pour les indices, on touche le post-it « Indice ? » en haut à droite. Le bouton ⏸ met en pause, et « ⛶ plein écran » apparaît dans le menu et dans la pause (sauf sur iPhone, où Safari ne le permet pas).
+- Les fenêtres des énigmes sont plus compactes sur petit écran. Le mode 2 joueurs marche aussi sur mobile.
+- Code : `src/ui/touch.js` (détection du tactile, plein écran) et `createTouchControls` dans `src/scenes/HubScene.js`.
+
 ## 👥 Mode 2 joueurs (en ligne)
 
 Menu → **Jouer à 2 (en ligne)**. Chacun joue sur son ordinateur. Le premier clique « Créer une partie » et donne le **code à 5 caractères** affiché ; le second clique « Rejoindre avec un code ». Il faut une connexion internet : le serveur public gratuit de PeerJS sert seulement à mettre les deux navigateurs en relation, ensuite ils communiquent en direct (WebRTC).

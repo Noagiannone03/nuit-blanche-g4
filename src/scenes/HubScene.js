@@ -10,9 +10,14 @@ import { endGame } from './endGame.js';
 import { isPatrolActive, patrolJustStarted, guardPosition } from '../state/patrol.js';
 import { sfx, setAmbience } from '../audio/sound.js';
 import { net, ROLES, sendPresence, esc } from '../net/multiplayer.js';
+import { isTouch } from '../ui/touch.js';
 
 const INTERACT_RADIUS = 46;
 const EXIT_TEAM_RADIUS = 110; // à 2 : les deux joueurs doivent être près de la sortie
+
+// Manette tactile (mobile) : joystick dans la zone hachurée en bas à gauche, bouton d'action sur le mur de droite
+const STICK = { x: 105, y: 545, r: 62 };
+const ACTION = { x: 930, y: 545, r: 27 };
 
 // Le couloir : le joueur s'y déplace et entre dans les salles par leurs portes.
 // Le couloir de l'école, vu de dessus : le joueur s'y déplace et entre dans les salles par leurs portes.
@@ -92,14 +97,61 @@ export class HubScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-E', () => this.interact());
     this.input.keyboard.on('keydown-ENTER', () => this.interact());
     this.input.keyboard.on('keydown-ESC', () => this.scene.get('UI').pause());
+    this.stick = null;
+    if (isTouch()) this.createTouchControls();
     this.input.on('pointerdown', (p) => {
-      if (!isDialogOpen()) this.target = { x: p.worldX, y: p.worldY };
+      if (!isDialogOpen() && !this.onTouchControls(p)) this.target = { x: p.worldX, y: p.worldY };
     });
 
     this.createMate();
 
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     this.scene.bringToTop('UI');
+  }
+
+  // ---------- Manette tactile (version mobile) ----------
+  createTouchControls() {
+    this.input.addPointer(1); // deux doigts : un sur le joystick, un pour toucher une porte
+    this.stick = { id: null, vx: 0, vy: 0 };
+    const base = this.add.circle(STICK.x, STICK.y, STICK.r, 0xffffff, 0.14).setStrokeStyle(3, 0xffffff, 0.5).setDepth(1100);
+    this.stickThumb = this.add.circle(STICK.x, STICK.y, 26, 0xffffff, 0.55).setDepth(1101);
+    txt(this, STICK.x, STICK.y + STICK.r + 14, 'bouger', { size: 13, weight: '800', color: 0xffffff }).setOrigin(0.5).setDepth(1100).setAlpha(0.7);
+    base.setInteractive(); // pour que le doigt posé dessus ne déclenche rien d'autre
+
+    const action = this.add.circle(ACTION.x, ACTION.y, ACTION.r, C.yellow, 0.9).setStrokeStyle(3, 0xffffff).setDepth(1100).setInteractive();
+    txt(this, ACTION.x, ACTION.y, '✋', { size: 24 }).setOrigin(0.5).setDepth(1101);
+    txt(this, ACTION.x, ACTION.y + ACTION.r + 12, 'agir', { size: 13, weight: '800', color: 0xffffff }).setOrigin(0.5).setDepth(1100).setAlpha(0.7);
+    action.on('pointerdown', () => this.interact());
+
+    const move = (p) => {
+      const dx = p.x - STICK.x;
+      const dy = p.y - STICK.y;
+      const len = Math.hypot(dx, dy);
+      const k = len > STICK.r ? STICK.r / len : 1;
+      this.stickThumb.setPosition(STICK.x + dx * k, STICK.y + dy * k);
+      // petite zone morte au centre : le doigt posé sans bouger ne fait pas avancer
+      this.stick.vx = len > 10 ? dx / len : 0;
+      this.stick.vy = len > 10 ? dy / len : 0;
+    };
+    this.input.on('pointerdown', (p) => {
+      if (Math.hypot(p.x - STICK.x, p.y - STICK.y) > STICK.r + 30) return;
+      this.stick.id = p.id;
+      move(p);
+    });
+    this.input.on('pointermove', (p) => p.id === this.stick.id && move(p));
+    const release = (p) => {
+      if (p.id !== this.stick.id) return;
+      this.stick = { id: null, vx: 0, vy: 0 };
+      this.stickThumb.setPosition(STICK.x, STICK.y);
+    };
+    this.input.on('pointerup', release);
+    this.input.on('pointerupoutside', release);
+  }
+
+  /** Vrai si le doigt est sur le joystick ou le bouton d'action (ce n'est pas un « va là-bas »). */
+  onTouchControls(p) {
+    if (!this.stick) return false;
+    return Math.hypot(p.x - STICK.x, p.y - STICK.y) <= STICK.r + 30 || Math.hypot(p.x - ACTION.x, p.y - ACTION.y) <= ACTION.r + 10;
   }
 
   // ---------- Le coéquipier (partie à 2) ----------
@@ -358,6 +410,11 @@ export class HubScene extends Phaser.Scene {
     let vx = (k.RIGHT.isDown || k.D.isDown ? 1 : 0) - (k.LEFT.isDown || k.Q.isDown ? 1 : 0);
     let vy = (k.DOWN.isDown || k.S.isDown ? 1 : 0) - (k.UP.isDown || k.Z.isDown ? 1 : 0);
 
+    if (this.stick && (this.stick.vx || this.stick.vy)) {
+      vx = this.stick.vx;
+      vy = this.stick.vy;
+    }
+
     if (vx || vy) {
       this.target = null;
     } else if (this.target) {
@@ -390,7 +447,7 @@ export class HubScene extends Phaser.Scene {
       (it) => Phaser.Math.Distance.Between(it.x, it.y, this.player.x, this.player.y) < INTERACT_RADIUS,
     );
     if (this.nearby) {
-      this.prompt.setText(`E — ${this.nearby.label}`).setVisible(true);
+      this.prompt.setText(`${this.stick ? '👆' : 'E —'} ${this.nearby.label}`).setVisible(true);
       // on garde l'étiquette dans l'écran (la porte de sortie est collée au bord)
       const x = Phaser.Math.Clamp(this.nearby.x + 10, this.prompt.width / 2 + 4, WORLD.width - this.prompt.width / 2 - 4);
       this.prompt.setPosition(x, this.nearby.y - 38);

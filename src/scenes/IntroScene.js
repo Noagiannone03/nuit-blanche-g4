@@ -3,6 +3,7 @@ import { state } from '../state/GameState.js';
 import { C, FONT_HAND, FONT_TITLE, txt } from '../ui/theme.js';
 import { sfx, setAmbience } from '../audio/sound.js';
 import { net, ROLES } from '../net/multiplayer.js';
+import { isTouch } from '../ui/touch.js';
 
 const LINES = [
   'Lundi soir, Cercle de projets. Tout le monde est parti.',
@@ -42,7 +43,7 @@ export class IntroScene extends Phaser.Scene {
     this.index = 0;
     this.typing = null;
     this.texts = this.lines.map((_, i) => txt(this, 150, 110 + i * 68, '', { size: 30, font: FONT_HAND, weight: '600', color: C.ink, wordWrap: { width: 720 } }));
-    this.prompt = txt(this, width - 80, height - 46, 'Espace pour continuer →', { size: 24, font: FONT_HAND, weight: '600', color: C.red }).setOrigin(1, 0.5);
+    this.prompt = txt(this, width - 80, height - 46, isTouch() ? 'Touche l\'écran pour continuer →' : 'Espace pour continuer →', { size: 24, font: FONT_HAND, weight: '600', color: C.red }).setOrigin(1, 0.5);
     this.tweens.add({ targets: this.prompt, alpha: 0.35, duration: 700, yoyo: true, repeat: -1 });
 
     this.next();
@@ -78,6 +79,6 @@ export class IntroScene extends Phaser.Scene {
       },
     });
     this.index += 1;
-    if (this.index === this.lines.length) this.prompt.setText('Espace pour commencer →');
+    if (this.index === this.lines.length) this.prompt.setText(isTouch() ? 'Touche l\'écran pour commencer →' : 'Espace pour commencer →');
   }
 }

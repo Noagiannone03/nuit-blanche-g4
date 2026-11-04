@@ -7,6 +7,7 @@ import { setAmbience, toggleMute, isMuted } from '../audio/sound.js';
 import { net, ROLES, hostGame, joinGame, leave } from '../net/multiplayer.js';
 import { createCharacter, drawPreview } from '../art/characters.js';
 import { SKIN_OPTIONS, loadSkin, saveSkin, paletteFromSkin } from '../art/skins.js';
+import { isTouch, toggleFullscreen } from '../ui/touch.js';
 
 // Le menu est écrit à la craie sur un tableau noir.
 export class MenuScene extends Phaser.Scene {
@@ -47,13 +48,24 @@ export class MenuScene extends Phaser.Scene {
       chalkButton(this, width / 2, 240 + i * 58, e.label, () => !isDialogOpen() && e.action());
     });
 
-    txt(this, width / 2, height - 28, 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  M : son  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés', {
+    // plein écran (surtout utile sur téléphone), en haut à gauche du tableau
+    if (this.scale.fullscreen.available) {
+      txt(this, 56, 48, '⛶ plein écran', { size: 22, font: FONT_HAND, weight: '600', color: C.chalk })
+        .setInteractive({ useHandCursor: true })
+        .on('pointerup', () => toggleFullscreen(this)); // le plein écran doit partir d'un « pointerup »
+    }
+
+    const help = isTouch()
+      ? 'Joystick : bouger  ·  ✋ : agir  ·  touche un objet pour l\'utiliser  ·  « Indice ? » en haut à droite  ·  ⏸ : pause'
+      : 'Flèches / ZQSD : bouger  ·  E : interagir  ·  H : indice  ·  P : pause  ·  M : son  ·  Échap : sortir d\'une salle  ·  souris et tactile acceptés';
+    txt(this, width / 2, height - 28, help, {
       size: 14, color: C.ink, weight: '700',
     }).setOrigin(0.5);
   }
 
   update() {
-    this.muteBtn.setText(isMuted() ? '🔇 son coupé (M)' : '🔊 son (M)');
+    const key = isTouch() ? '' : ' (M)';
+    this.muteBtn.setText(isMuted() ? `🔇 son coupé${key}` : `🔊 son${key}`);
   }
 
   newGame() {

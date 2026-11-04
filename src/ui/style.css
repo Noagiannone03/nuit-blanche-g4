@@ -28,6 +28,96 @@ body {
 #game {
   width: 100vw;
   height: 100vh;
+  height: 100dvh; /* mobile : sans la barre d'adresse */
+  touch-action: none; /* pas de zoom ni de défilement quand on joue au doigt */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+/* ---------- Version mobile ---------- */
+#rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--board);
+  color: #f3f1e7;
+  font-family: var(--hand);
+  font-size: 2rem;
+  text-align: center;
+}
+
+#rotate span {
+  font-size: 4rem;
+  animation: rotate-hint 1.6s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  #rotate {
+    display: flex;
+  }
+}
+
+/* Petit écran (téléphone en paysage) : le cahier est plus compact */
+@media (max-height: 520px), (max-width: 600px) {
+  #overlay {
+    padding: 6px;
+  }
+
+  .dialog {
+    max-height: 96vh;
+    max-height: 96dvh;
+    padding: 12px 14px 12px 40px;
+    background:
+      linear-gradient(90deg, transparent 28px, var(--margin) 28px, var(--margin) 30px, transparent 30px),
+      repeating-linear-gradient(180deg, var(--paper) 0 25px, var(--line) 25px 26px);
+  }
+
+  .dialog h2 {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+  }
+
+  .dialog p,
+  .dialog li {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 6px 0;
+  }
+
+  .dialog .hand {
+    font-size: 1.2rem;
+    padding: 8px 12px;
+  }
+
+  .dialog pre {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+  }
+
+  .dialog input {
+    font-size: 1.3rem; /* au moins 16 px : sinon l'iPhone zoome sur le champ */
+    padding: 6px 10px;
+  }
+
+  .dialog .actions {
+    margin-top: 10px;
+  }
 }
 
 /* ---------- Surcouche des énigmes : une page de cahier ---------- */

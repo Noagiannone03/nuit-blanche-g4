@@ -3,6 +3,7 @@ import { state } from '../state/GameState.js';
 import { computeScore, addEntry } from '../state/leaderboard.js';
 import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../ui/theme.js';
 import { sfx, setAmbience } from '../audio/sound.js';
+import { isTouch } from '../ui/touch.js';
 
 const ENDINGS = {
   escaped: { stamp: 'ÉVADÉ !', text: 'La porte s\'ouvre dans un déclic. Tu sors dans la nuit, ton projet sauvegardé sur une clé USB.', color: C.green, pose: 'player-down' },
@@ -103,7 +104,7 @@ export class EndScene extends Phaser.Scene {
     if (ending.pose) sprite.play(ending.pose);
     else sprite.setAngle(90).setY(470); // endormi par terre…
 
-    chalkButton(this, width / 2 - 20, 548, 'Entrée · retour au menu', () => this.scene.start('Menu'), { width: 360, size: 24 });
+    chalkButton(this, width / 2 - 20, 548, isTouch() ? 'Retour au menu' : 'Entrée · retour au menu', () => this.scene.start('Menu'), { width: 360, size: 24 });
     this.input.keyboard.once('keydown-ENTER', () => this.scene.start('Menu'));
   }
 }

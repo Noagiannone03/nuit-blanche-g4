@@ -2,7 +2,10 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#2b2622" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>" />
     <title>Nuit Blanche à G4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,6 +17,8 @@
     <main id="game" aria-label="Jeu Nuit Blanche à G4"></main>
     <!-- Les énigmes s'affichent dans cette surcouche HTML (accessible au clavier et sur mobile) -->
     <div id="overlay" aria-live="polite"></div>
+    <!-- Téléphone tenu à la verticale : le jeu se joue en paysage -->
+    <div id="rotate" role="alert"><span>📱↻</span><p>Tourne ton téléphone<br />en mode paysage</p></div>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>

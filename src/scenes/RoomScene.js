@@ -10,6 +10,7 @@ import { isPatrolActive, guardPosition } from '../state/patrol.js';
 import { FLASH_RADIUS } from '../config.js';
 import { sfx, setAmbience } from '../audio/sound.js';
 import { net, ROLES, sendPresence, canUse, roleRefusal } from '../net/multiplayer.js';
+import { isTouch } from '../ui/touch.js';
 
 const NUMBER_KEYS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
 const WALL_TOP = 130; // haut du mur (au-dessus : bandeau titre)
@@ -81,7 +82,7 @@ export class RoomScene extends Phaser.Scene {
     if (state.hasItem('courant')) this.lightRoom();
     else this.makeDarkness();
 
-    const back = txt(this, this.scale.width - 20, this.scale.height - 18, '← Échap · couloir', {
+    const back = txt(this, this.scale.width - 20, this.scale.height - 18, isTouch() ? '← couloir' : '← Échap · couloir', {
       size: 15, weight: '800', color: C.ink, backgroundColor: hex(C.paper), padding: { x: 12, y: 7 },
     })
       .setOrigin(1, 1)
