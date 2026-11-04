@@ -7,7 +7,7 @@ import { setAmbience, toggleMute, isMuted } from '../audio/sound.js';
 import { net, ROLES, hostGame, joinGame, leave } from '../net/multiplayer.js';
 import { createCharacter, drawPreview } from '../art/characters.js';
 import { SKIN_OPTIONS, loadSkin, saveSkin, paletteFromSkin } from '../art/skins.js';
-import { isTouch, toggleFullscreen } from '../ui/touch.js';
+import { isTouch, toggleFullscreen, fullscreenAvailable } from '../ui/touch.js';
 
 // Le menu est écrit à la craie sur un tableau noir.
 export class MenuScene extends Phaser.Scene {
@@ -49,10 +49,10 @@ export class MenuScene extends Phaser.Scene {
     });
 
     // plein écran (surtout utile sur téléphone), en haut à gauche du tableau
-    if (this.scale.fullscreen.available) {
+    if (fullscreenAvailable()) {
       txt(this, 56, 48, '⛶ plein écran', { size: 22, font: FONT_HAND, weight: '600', color: C.chalk })
         .setInteractive({ useHandCursor: true })
-        .on('pointerup', () => toggleFullscreen(this)); // le plein écran doit partir d'un « pointerup »
+        .on('pointerup', () => toggleFullscreen()); // le plein écran doit partir d'un « pointerup »
     }
 
     const help = isTouch()
