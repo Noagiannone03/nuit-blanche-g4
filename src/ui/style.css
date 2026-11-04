@@ -1,430 +1,436 @@
-:root {
-  --bg: #2b2622;
-  --paper: #fdfaf1;
-  --line: #c9d8ee;
-  --margin: #e06a6a;
-  --ink: #1f2a44;
-  --blue: #2d6cdf;
-  --red: #c0392b;
-  --green: #2e9e5b;
-  --yellow: #ffe97a;
-  --board: #2f5d46;
-  --muted: #6b7489;
-  --title: 'Permanent Marker', 'Comic Sans MS', cursive;
-  --body: 'Nunito', 'Segoe UI', sans-serif;
-  --hand: 'Caveat', 'Comic Sans MS', cursive;
+:root { /* variables utilisables partout dans la page */
+  --bg: #2b2622; /* couleur du fond de la page */
+  --paper: #fdfaf1; /* couleur du papier du cahier */
+  --line: #c9d8ee; /* couleur des lignes bleues du cahier */
+  --margin: #e06a6a; /* couleur de la marge rouge */
+  --ink: #1f2a44; /* couleur de l'encre (le texte) */
+  --blue: #2d6cdf; /* notre bleu */
+  --red: #c0392b; /* notre rouge */
+  --green: #2e9e5b; /* notre vert */
+  --yellow: #ffe97a; /* notre jaune (post-it) */
+  --board: #2f5d46; /* vert du tableau noir */
+  --muted: #6b7489; /* gris pour le texte discret */
+  --title: 'Permanent Marker', 'Comic Sans MS', cursive; /* police des titres */
+  --body: 'Nunito', 'Segoe UI', sans-serif; /* police du texte normal */
+  --hand: 'Caveat', 'Comic Sans MS', cursive; /* police écrite à la main */
 }
 
-html,
-body {
-  margin: 0;
-  height: 100%;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--body);
-  overflow: hidden;
+html, /* la page entière */
+body { /* et le corps de la page */
+  margin: 0; /* pas de marge autour */
+  height: 100%; /* prend toute la hauteur */
+  background: var(--bg); /* fond sombre */
+  color: var(--ink); /* couleur du texte */
+  font-family: var(--body); /* police du texte normal */
+  overflow: hidden; /* pas de barres de défilement */
 }
 
-#game {
-  width: 100vw;
-  height: 100vh;
+#game { /* la zone où le jeu s'affiche */
+  width: 100vw; /* toute la largeur de l'écran */
+  height: 100vh; /* toute la hauteur de l'écran */
   height: 100dvh; /* mobile : sans la barre d'adresse */
   touch-action: none; /* pas de zoom ni de défilement quand on joue au doigt */
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  user-select: none; /* on ne peut pas sélectionner le texte */
+  -webkit-user-select: none; /* pareil, pour Safari */
+  -webkit-tap-highlight-color: transparent; /* pas de flash gris quand on touche */
 }
 
-body {
-  overscroll-behavior: none;
+body { /* le corps de la page */
+  overscroll-behavior: none; /* pas d'effet rebond en faisant défiler */
 }
 
 /* ---------- Version mobile ---------- */
-#rotate {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--board);
-  color: #f3f1e7;
-  font-family: var(--hand);
-  font-size: 2rem;
-  text-align: center;
+#rotate { /* message "tourne ton téléphone" */
+  position: fixed; /* reste fixe sur l'écran */
+  inset: 0; /* colle aux 4 bords */
+  z-index: 20; /* passe au-dessus de tout */
+  display: none; /* caché par défaut */
+  flex-direction: column; /* éléments empilés de haut en bas */
+  align-items: center; /* centré à l'horizontale */
+  justify-content: center; /* centré à la verticale */
+  gap: 8px; /* espace entre les éléments */
+  background: var(--board); /* fond vert tableau */
+  color: #f3f1e7; /* texte blanc craie */
+  font-family: var(--hand); /* écriture à la main */
+  font-size: 2rem; /* grand texte */
+  text-align: center; /* texte centré */
 }
 
-#rotate span {
-  font-size: 4rem;
-  animation: rotate-hint 1.6s ease-in-out infinite;
+#rotate span { /* l'icône du téléphone */
+  font-size: 4rem; /* très grande icône */
+  animation: rotate-hint 1.6s ease-in-out infinite; /* l'icône tourne en boucle */
 }
 
-@keyframes rotate-hint {
-  50% {
-    transform: rotate(-90deg);
+@keyframes rotate-hint { /* l'animation qui fait tourner l'icône */
+  50% { /* à la moitié de l'animation */
+    transform: rotate(-90deg); /* l'icône est tournée d'un quart de tour */
   }
 }
 
-@media (orientation: portrait) and (pointer: coarse) {
-  #rotate {
-    display: flex;
+@media (orientation: portrait) and (pointer: coarse) { /* si téléphone tenu debout */
+  #rotate { /* le message "tourne ton téléphone" */
+    display: flex; /* on l'affiche */
   }
 }
 
 /* Petit écran (téléphone en paysage) : le cahier est plus compact */
-@media (max-height: 520px), (max-width: 600px) {
-  #overlay {
-    padding: 6px;
+@media (max-height: 520px), (max-width: 600px) { /* si l'écran est petit */
+  #overlay { /* le fond derrière la fenêtre */
+    padding: 6px; /* moins d'espace autour */
   }
 
-  .dialog {
-    max-height: 96vh;
-    max-height: 96dvh;
-    padding: 12px 14px 12px 40px;
-    background:
+  .dialog { /* la fenêtre en forme de cahier */
+    max-height: 96vh; /* presque toute la hauteur */
+    max-height: 96dvh; /* pareil, sans la barre d'adresse */
+    padding: 12px 14px 12px 40px; /* espace intérieur plus petit */
+    background: /* lignes du cahier plus serrées + marge rouge */
       linear-gradient(90deg, transparent 28px, var(--margin) 28px, var(--margin) 30px, transparent 30px),
       repeating-linear-gradient(180deg, var(--paper) 0 25px, var(--line) 25px 26px);
   }
 
-  .dialog h2 {
-    font-size: 1.2rem;
-    margin-bottom: 6px;
+  .dialog h2 { /* le titre des fenêtres */
+    font-size: 1.2rem; /* titre plus petit */
+    margin-bottom: 6px; /* petit espace dessous */
   }
 
-  .dialog p,
-  .dialog li {
-    font-size: 0.95rem;
-    line-height: 1.4;
-    margin: 6px 0;
+  .dialog p, /* les paragraphes */
+  .dialog li { /* et les éléments de liste */
+    font-size: 0.95rem; /* texte un peu plus petit */
+    line-height: 1.4; /* lignes un peu plus serrées */
+    margin: 6px 0; /* petit espace dessus et dessous */
   }
 
-  .dialog .hand {
-    font-size: 1.2rem;
-    padding: 8px 12px;
+  .dialog .hand { /* les post-it */
+    font-size: 1.2rem; /* texte plus petit */
+    padding: 8px 12px; /* moins d'espace intérieur */
   }
 
-  .dialog pre {
-    font-size: 0.8rem;
-    padding: 8px 10px;
+  .dialog pre { /* le code sur le petit tableau */
+    font-size: 0.8rem; /* code plus petit */
+    padding: 8px 10px; /* moins d'espace intérieur */
   }
 
-  .dialog input {
+  .dialog input { /* la case où on écrit la réponse */
     font-size: 1.3rem; /* au moins 16 px : sinon l'iPhone zoome sur le champ */
-    padding: 6px 10px;
+    padding: 6px 10px; /* moins d'espace intérieur */
   }
 
-  .dialog .actions {
-    margin-top: 10px;
+  .dialog .actions { /* la ligne des boutons */
+    margin-top: 10px; /* moins d'espace au-dessus */
   }
 }
 
 /* ---------- Surcouche des énigmes : une page de cahier ---------- */
-#overlay {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(10, 12, 25, 0.55);
-  z-index: 10;
+#overlay { /* le fond sombre derrière la fenêtre */
+  position: fixed; /* reste fixe sur l'écran */
+  inset: 0; /* colle aux 4 bords */
+  display: none; /* caché par défaut */
+  align-items: center; /* centre la fenêtre à la verticale */
+  justify-content: center; /* centre la fenêtre à l'horizontale */
+  padding: 16px; /* espace autour de la fenêtre */
+  background: rgba(10, 12, 25, 0.55); /* noir à moitié transparent */
+  z-index: 10; /* passe au-dessus du jeu */
 }
 
-#overlay.open {
-  display: flex;
+#overlay.open { /* quand une énigme est ouverte */
+  display: flex; /* on l'affiche */
 }
 
-.dialog {
-  position: relative;
-  width: 100%;
-  max-width: 640px;
-  max-height: 90vh;
-  overflow: auto;
-  box-sizing: border-box;
-  padding: 26px 28px 22px 64px;
-  color: var(--ink);
+.dialog { /* la fenêtre en forme de page de cahier */
+  position: relative; /* sert de repère pour ce qu'il y a dedans */
+  width: 100%; /* prend toute la largeur possible */
+  max-width: 640px; /* mais pas plus de 640 pixels */
+  max-height: 90vh; /* pas plus haut que 90 % de l'écran */
+  overflow: auto; /* barre de défilement si trop de texte */
+  box-sizing: border-box; /* la taille compte aussi l'espace intérieur */
+  padding: 26px 28px 22px 64px; /* espace intérieur (plus à gauche pour la marge) */
+  color: var(--ink); /* couleur du texte */
   /* lignes bleues + marge rouge du cahier */
-  background:
+  background: /* le fond dessiné du cahier */
     linear-gradient(90deg, transparent 46px, var(--margin) 46px, var(--margin) 48px, transparent 48px),
     repeating-linear-gradient(180deg, var(--paper) 0 31px, var(--line) 31px 32px);
-  background-color: var(--paper);
-  border-radius: 4px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-  animation: dialog-in 0.18s ease-out;
+  background-color: var(--paper); /* couleur du papier en dessous */
+  border-radius: 4px; /* coins un peu arrondis */
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); /* ombre sous la fenêtre */
+  animation: dialog-in 0.18s ease-out; /* petite animation d'apparition */
 }
 
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) rotate(-1deg);
+@keyframes dialog-in { /* l'animation d'apparition de la fenêtre */
+  from { /* au tout début */
+    opacity: 0; /* invisible */
+    transform: translateY(10px) rotate(-1deg); /* un peu plus bas et penchée */
   }
 }
 
-.dialog h2 {
-  margin: 0 0 12px;
-  font-family: var(--title);
-  font-weight: 400;
-  font-size: 1.6rem;
-  color: var(--blue);
+.dialog h2 { /* le titre des fenêtres */
+  margin: 0 0 12px; /* espace seulement en dessous */
+  font-family: var(--title); /* police des titres */
+  font-weight: 400; /* épaisseur normale */
+  font-size: 1.6rem; /* grand texte */
+  color: var(--blue); /* en bleu */
 }
 
-.dialog p,
-.dialog li {
-  line-height: 1.6;
-  font-size: 1.05rem;
+.dialog p, /* les paragraphes */
+.dialog li { /* et les éléments de liste */
+  line-height: 1.6; /* espace entre les lignes */
+  font-size: 1.05rem; /* taille du texte */
 }
 
-.dialog strong {
-  color: var(--red);
+.dialog strong { /* les mots en gras */
+  color: var(--red); /* en rouge */
 }
 
 /* Code : écrit à la craie sur un petit tableau */
-.dialog pre {
-  background: var(--board);
-  color: #f3f1e7;
-  padding: 14px 16px;
-  border: 6px solid #6b4a2c;
-  border-radius: 3px;
-  overflow-x: auto;
-  font-size: 0.95rem;
+.dialog pre { /* les blocs de code */
+  background: var(--board); /* fond vert tableau */
+  color: #f3f1e7; /* texte blanc craie */
+  padding: 14px 16px; /* espace intérieur */
+  border: 6px solid #6b4a2c; /* cadre en bois marron */
+  border-radius: 3px; /* coins un peu arrondis */
+  overflow-x: auto; /* défilement de côté si le code est long */
+  font-size: 0.95rem; /* taille du texte */
 }
 
-.dialog table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 8px 0;
-  background: rgba(255, 255, 255, 0.7);
+.dialog table { /* les tableaux */
+  width: 100%; /* toute la largeur */
+  border-collapse: collapse; /* bordures collées ensemble */
+  margin: 8px 0; /* espace dessus et dessous */
+  background: rgba(255, 255, 255, 0.7); /* fond blanc un peu transparent */
 }
 
-.dialog th {
-  text-align: left;
-  font-weight: 800;
-  color: var(--blue);
-  border-bottom: 2px solid var(--blue);
-  padding: 6px 8px;
+.dialog th { /* les cases de titre du tableau */
+  text-align: left; /* texte aligné à gauche */
+  font-weight: 800; /* texte très gras */
+  color: var(--blue); /* en bleu */
+  border-bottom: 2px solid var(--blue); /* trait bleu dessous */
+  padding: 6px 8px; /* espace intérieur */
 }
 
-.dialog td {
-  border-bottom: 1px solid var(--line);
-  padding: 6px 8px;
+.dialog td { /* les cases normales du tableau */
+  border-bottom: 1px solid var(--line); /* fin trait bleu clair dessous */
+  padding: 6px 8px; /* espace intérieur */
+}
+
+/* Texte d'écran qui revient à la ligne (pas de barre de défilement) */
+.dialog pre.wrap { /* un écran de texte qui passe à la ligne */
+  white-space: pre-wrap; /* les lignes trop longues continuent en dessous */
+  overflow-x: visible; /* pas de barre pour faire défiler sur le côté */
 }
 
 /* Notes manuscrites : post-it jaune */
-.dialog .hand {
-  font-family: var(--hand);
-  font-weight: 600;
-  font-size: 1.45rem;
-  line-height: 1.25;
-  background: var(--yellow);
-  color: var(--ink);
-  padding: 12px 16px;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
-  transform: rotate(-1.5deg);
+.dialog .hand { /* les notes écrites à la main */
+  font-family: var(--hand); /* police écrite à la main */
+  font-weight: 600; /* un peu gras */
+  font-size: 1.45rem; /* grand texte */
+  line-height: 1.25; /* lignes assez serrées */
+  background: var(--yellow); /* fond jaune post-it */
+  color: var(--ink); /* couleur du texte */
+  padding: 12px 16px; /* espace intérieur */
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2); /* petite ombre */
+  transform: rotate(-1.5deg); /* un peu penché, comme collé à la main */
 }
 
-.dialog form {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
+.dialog form { /* le formulaire de réponse */
+  display: flex; /* éléments côte à côte */
+  gap: 10px; /* espace entre la case et le bouton */
+  margin-top: 14px; /* espace au-dessus */
 }
 
-.dialog input {
-  flex: 1;
-  min-width: 0;
-  padding: 10px 12px;
-  font-family: var(--hand);
-  font-weight: 600;
-  font-size: 1.6rem;
-  color: var(--blue);
-  background: rgba(255, 255, 255, 0.85);
-  border: 2px solid var(--ink);
-  border-radius: 6px;
+.dialog input { /* la case où on écrit la réponse */
+  flex: 1; /* prend toute la place restante */
+  min-width: 0; /* peut devenir étroite si besoin */
+  padding: 10px 12px; /* espace intérieur */
+  font-family: var(--hand); /* police écrite à la main */
+  font-weight: 600; /* un peu gras */
+  font-size: 1.6rem; /* grand texte */
+  color: var(--blue); /* texte en bleu */
+  background: rgba(255, 255, 255, 0.85); /* fond presque blanc */
+  border: 2px solid var(--ink); /* bordure foncée */
+  border-radius: 6px; /* coins arrondis */
 }
 
-.dialog input:focus {
-  outline: 3px solid var(--yellow);
-  outline-offset: 1px;
+.dialog input:focus { /* quand on clique dans la case */
+  outline: 3px solid var(--yellow); /* contour jaune */
+  outline-offset: 1px; /* contour un peu décollé */
 }
 
-.dialog button {
-  padding: 10px 16px;
-  font-family: var(--body);
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--ink);
-  background: #fff;
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-  box-shadow: 0 3px 0 var(--ink);
-  cursor: pointer;
-  transition: transform 0.08s, box-shadow 0.08s;
+.dialog button { /* les boutons */
+  padding: 10px 16px; /* espace intérieur */
+  font-family: var(--body); /* police du texte normal */
+  font-size: 0.95rem; /* taille du texte */
+  font-weight: 800; /* texte très gras */
+  color: var(--ink); /* couleur du texte */
+  background: #fff; /* fond blanc */
+  border: 2px solid var(--ink); /* bordure foncée */
+  border-radius: 6px; /* coins arrondis */
+  box-shadow: 0 3px 0 var(--ink); /* ombre dessous : effet de relief */
+  cursor: pointer; /* la souris devient une main */
+  transition: transform 0.08s, box-shadow 0.08s; /* changements en douceur */
 }
 
-.dialog button:hover:not(:disabled) {
-  background: var(--yellow);
+.dialog button:hover:not(:disabled) { /* souris sur un bouton actif */
+  background: var(--yellow); /* le bouton devient jaune */
 }
 
-.dialog button:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--ink);
+.dialog button:active:not(:disabled) { /* quand on appuie sur le bouton */
+  transform: translateY(2px); /* le bouton descend un peu */
+  box-shadow: 0 1px 0 var(--ink); /* ombre plus petite : il est enfoncé */
 }
 
-.dialog button.primary {
-  color: #fff;
-  background: var(--blue);
+.dialog button.primary { /* le bouton principal */
+  color: #fff; /* texte blanc */
+  background: var(--blue); /* fond bleu */
 }
 
-.dialog button.primary:hover:not(:disabled) {
-  background: #1f56b8;
+.dialog button.primary:hover:not(:disabled) { /* souris sur le bouton principal */
+  background: #1f56b8; /* bleu plus foncé */
 }
 
-.dialog button:disabled {
-  opacity: 0.55;
-  cursor: default;
+.dialog button:disabled { /* bouton désactivé */
+  opacity: 0.55; /* à moitié transparent */
+  cursor: default; /* souris normale */
 }
 
-.dialog button:focus-visible {
-  outline: 3px solid var(--yellow);
-  outline-offset: 2px;
+.dialog button:focus-visible { /* bouton choisi au clavier */
+  outline: 3px solid var(--yellow); /* contour jaune */
+  outline-offset: 2px; /* contour un peu décollé */
 }
 
-.dialog .actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
+.dialog .actions { /* la ligne des boutons */
+  display: flex; /* boutons côte à côte */
+  flex-wrap: wrap; /* passe à la ligne si pas de place */
+  gap: 10px; /* espace entre les boutons */
+  margin-top: 18px; /* espace au-dessus */
 }
 
-.dialog .feedback {
-  min-height: 1.4em;
-  margin-top: 10px;
-  font-family: var(--hand);
-  font-size: 1.45rem;
-  font-weight: 600;
+.dialog .feedback { /* le message "bravo" ou "raté" */
+  min-height: 1.4em; /* garde sa place même vide */
+  margin-top: 10px; /* espace au-dessus */
+  font-family: var(--hand); /* police écrite à la main */
+  font-size: 1.45rem; /* grand texte */
+  font-weight: 600; /* un peu gras */
 }
 
-.dialog .feedback.error {
-  color: var(--red);
+.dialog .feedback.error { /* message d'erreur */
+  color: var(--red); /* en rouge */
 }
 
-.dialog .feedback.ok {
-  color: var(--green);
+.dialog .feedback.ok { /* message de réussite */
+  color: var(--green); /* en vert */
 }
 
 /* Choix du skin (menu « Mon élève ») */
-.skin-preview {
-  display: block;
-  margin: 0 auto 12px;
-  image-rendering: pixelated;
-  background: #e9e2d2;
-  border-radius: 8px;
-  padding: 8px;
+.skin-preview { /* l'aperçu du personnage */
+  display: block; /* prend sa propre ligne */
+  margin: 0 auto 12px; /* centré, avec espace dessous */
+  image-rendering: pixelated; /* pixels nets, pas flous */
+  background: #e9e2d2; /* fond beige */
+  border-radius: 8px; /* coins arrondis */
+  padding: 8px; /* espace intérieur */
 }
 
-.skin-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 6px 0;
+.skin-row { /* une ligne de choix (peau, cheveux…) */
+  display: flex; /* éléments côte à côte */
+  flex-wrap: wrap; /* passe à la ligne si pas de place */
+  align-items: center; /* centrés à la verticale */
+  gap: 6px; /* espace entre les éléments */
+  margin: 6px 0; /* espace dessus et dessous */
 }
 
-.skin-row span {
-  width: 90px;
-  font-weight: 800;
+.skin-row span { /* le nom de la ligne */
+  width: 90px; /* largeur fixe */
+  font-weight: 800; /* texte très gras */
 }
 
-.dialog .skin-row .swatch {
-  width: 30px;
-  height: 30px;
-  min-height: 0;
-  padding: 0;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 2px #8a7a68;
+.dialog .skin-row .swatch { /* une pastille de couleur */
+  width: 30px; /* largeur */
+  height: 30px; /* hauteur */
+  min-height: 0; /* pas de hauteur minimum */
+  padding: 0; /* pas d'espace intérieur */
+  border-radius: 50%; /* coins arrondis : ça fait un rond */
+  border: 3px solid #fff; /* bordure blanche */
+  box-shadow: 0 0 0 2px #8a7a68; /* fin contour marron autour */
 }
 
-.dialog .skin-row .swatch.text {
-  width: auto;
-  border-radius: 8px;
-  padding: 0 10px;
-  font-size: 0.85rem;
-  background: #fff;
+.dialog .skin-row .swatch.text { /* une pastille avec du texte */
+  width: auto; /* largeur selon le texte */
+  border-radius: 8px; /* coins arrondis */
+  padding: 0 10px; /* espace à gauche et à droite */
+  font-size: 0.85rem; /* petit texte */
+  background: #fff; /* fond blanc */
 }
 
-.dialog .skin-row .swatch[aria-pressed='true'] {
-  box-shadow: 0 0 0 3px var(--green);
+.dialog .skin-row .swatch[aria-pressed='true'] { /* la pastille choisie */
+  box-shadow: 0 0 0 3px var(--green); /* contour vert */
 }
 
-.dialog .skin-row .swatch.text[aria-pressed='true'] {
-  color: #fff;
-  background: var(--green);
+.dialog .skin-row .swatch.text[aria-pressed='true'] { /* la pastille texte choisie */
+  color: #fff; /* texte blanc */
+  background: var(--green); /* fond vert */
 }
 
 /* Pavé numérique de la porte de sortie */
-.keypad-screen {
-  margin: 8px auto;
-  width: 200px;
-  padding: 8px;
-  text-align: center;
-  font-family: monospace;
-  font-size: 1.8rem;
-  letter-spacing: 0.1em;
-  color: #3dff7a;
-  background: #111;
-  border-radius: 6px;
+.keypad-screen { /* l'écran du code */
+  margin: 8px auto; /* centré, avec espace dessus et dessous */
+  width: 200px; /* largeur */
+  padding: 8px; /* espace intérieur */
+  text-align: center; /* texte centré */
+  font-family: monospace; /* police où tous les chiffres ont la même largeur */
+  font-size: 1.8rem; /* gros chiffres */
+  letter-spacing: 0.1em; /* chiffres un peu écartés */
+  color: #3dff7a; /* chiffres vert fluo */
+  background: #111; /* fond noir */
+  border-radius: 6px; /* coins arrondis */
 }
 
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 64px);
-  gap: 8px;
-  justify-content: center;
+.keypad { /* le pavé de touches */
+  display: grid; /* rangé en grille */
+  grid-template-columns: repeat(3, 64px); /* 3 colonnes de 64 pixels */
+  gap: 8px; /* espace entre les touches */
+  justify-content: center; /* grille centrée */
 }
 
-.dialog .keypad button {
-  height: 52px;
-  font-size: 1.4rem;
+.dialog .keypad button { /* une touche du pavé */
+  height: 52px; /* hauteur de la touche */
+  font-size: 1.4rem; /* gros chiffre */
 }
 
-.dialog .keypad button.ok {
-  color: #fff;
-  background: var(--green);
+.dialog .keypad button.ok { /* la touche valider */
+  color: #fff; /* texte blanc */
+  background: var(--green); /* fond vert */
 }
 
-.dialog .keypad button.cancel {
-  color: #fff;
-  background: var(--red);
+.dialog .keypad button.cancel { /* la touche effacer */
+  color: #fff; /* texte blanc */
+  background: var(--red); /* fond rouge */
 }
 
 /* Boîtier à interrupteurs (Mont Ventoux) */
-.switches {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
+.switches { /* la rangée d'interrupteurs */
+  display: flex; /* côte à côte */
+  gap: 12px; /* espace entre eux */
+  align-items: center; /* centrés à la verticale */
+  flex-wrap: wrap; /* passe à la ligne si pas de place */
 }
 
-.dialog .switches button[aria-pressed='true'] {
-  color: #fff;
-  background: var(--green);
+.dialog .switches button[aria-pressed='true'] { /* interrupteur allumé */
+  color: #fff; /* texte blanc */
+  background: var(--green); /* fond vert */
 }
 
-.lamp {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #cfcfc8;
-  border: 3px solid #8a8a82;
-  margin-left: auto;
-  transition: all 0.2s;
+.lamp { /* la lampe */
+  width: 46px; /* largeur */
+  height: 46px; /* hauteur */
+  border-radius: 50%; /* coins arrondis : ça fait un rond */
+  background: #cfcfc8; /* gris : lampe éteinte */
+  border: 3px solid #8a8a82; /* bordure grise */
+  margin-left: auto; /* poussée tout à droite */
+  transition: all 0.2s; /* change en douceur */
 }
 
-.lamp.on {
-  background: #fff3a0;
-  border-color: #e0a030;
-  box-shadow: 0 0 24px #ffd84d;
+.lamp.on { /* la lampe allumée */
+  background: #fff3a0; /* jaune clair */
+  border-color: #e0a030; /* bordure orange */
+  box-shadow: 0 0 24px #ffd84d; /* halo de lumière autour */
 }
 

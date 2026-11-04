@@ -7,7 +7,7 @@ Il a jusqu'à **9h00** (environ 20 minutes réelles) pour trouver le code de la 
 
 ## ▶️ Jouer (jury)
 
-**URL publique : https://nuit-blanche-g4.vercel.app/
+**URL publique : https://nuit-blanche-g4.vercel.app/**
 
 Aucune installation nécessaire : un navigateur récent (Chrome, Firefox, Edge, Safari), sur ordinateur ou mobile.
 
@@ -39,25 +39,28 @@ npm run dev        # puis ouvrir http://localhost:5173
 Les énigmes s'enchaînent : toutes les salles sont ouvertes, mais chacune a besoin d'un objet ou d'une information trouvée dans la précédente.
 
 ```
-Sormiou ──clé de l'armoire──▶ Mont Ventoux (courant rétabli, gardien alerté) ──mot de passe projeté──▶ Callelongue
-   ──durées imprimées──▶ Ste Victoire ──clé du frigo──▶ Garlaban ──ordre──▶ Sortie
+Sormiou ──clé + mot de passe (post-it jaune)──▶ Mont Ventoux (boîtier : 5 → courant ; lumière au choix → gardien)
+   ──courant──▶ Callelongue ──durées imprimées──▶ Ste Victoire ──clé du coffre──▶ Garlaban ──ordre──▶ Sortie
 ```
 
 | Étape | Salle | Domaine | Il faut… | Énigme | Réponse | Ça débloque… |
 |---|---|---|---|---|---|---|
-| 1 | Sormiou | Observation visuelle | rien (dans le noir, au flash du téléphone) | Compter les post-it **jaunes** (règle sur le tableau blanc) parmi 50 post-it de 6 couleurs : un près de la plante, un sur le mur de droite. Ouvrir le casier (objet 2) | **2** | La clé de l'armoire électrique de l'amphi |
-| 2 | Amphi Mont Ventoux | Logique | la clé de l'armoire | Tableau (objet 1) : objectif LAMPE = 1. Boîtier (objet 2) : interrupteurs, lampe et champ du chiffre dans la même boîte. Bonne combinaison **A = 1, B = 0, C = 1** ; le joueur tape 101 lu en binaire = 5. Il peut d'abord « Tester la lampe » (essai raté = +20 min ; réussite = le courant revient) **ou** taper 5 directement et rester dans le noir | **5** | Le vidéoprojecteur (objet 4, sur onduleur) affiche le mot de passe `CERCLE26`. Si la lampe a été testée : le courant revient partout (plus besoin du flash) et **le gardien commence ses rondes** ; sinon tout reste noir mais le gardien dort. |
-| 3 | Callelongue | Algorithmique / code | le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : 3 → 5 → (5 ≤ 6 donc × 2) 10 → 10 − 4 = 6 → (pair donc / 2) 3 | **3** | L'imprimante sort les durées des tâches |
-| 4 | Ste Victoire | Gestion de projet | les durées | Planning (objet 1) puis coffre (objet 2) : chemin critique A(1) → B(3) → D(4) = 8 jours | **8** | La clé du frigo |
-| 5 | Point repas / Garlaban | Ordre du code | la clé du frigo | Frigo (objet 1) : énigme du repas. Pair = fille, impair = garçon, nombre = âge. Plus jeune garçon (3) en deuxième, entre son grand frère (5) et une sœur ; les deux plus jeunes (2 et 3) côte à côte ; les deux sœurs fâchées (2 et 8) pas côte à côte → **2358**. Le lien chiffres = âges n'est pas affiché (indice H n°2) | Sormiou, Callelongue, Ventoux, Ste Victoire | L'ordre du code |
-| Fin | Porte de sortie (couloir, à gauche) | — | les 4 chiffres + l'ordre | Chiffres dans l'ordre : 2 · 3 · 5 · 8 | **2358** | L'évasion |
+| 1 | Sormiou | Observation visuelle | rien (dans le noir, au flash du téléphone) | Compter les post-it **jaunes** (règle sur le tableau blanc) parmi 50 post-it de 6 couleurs : un près de la plante, un sur le mur de droite. Les post-it jaunes sont cliquables : celui près de la plante porte « mdp : `CERCLE26` ». Ouvrir le casier (objet 2) | **2** | Une clé (celle du boîtier électrique de l'amphi, sans le dire) et le mot de passe du PC de Callelongue |
+| 2 | Amphi Mont Ventoux | Logique | la clé | Tableau (objet 1) : objectif LAMPE = 1. Boîtier (objet 2) : interrupteurs, lampe et champ du chiffre. « Tester la lampe » (essai raté = +20 min) avec **A = 1, B = 0, C = 1** allume seulement la lampe du boîtier ; le joueur tape 101 lu en binaire = 5 | **5** | **Le courant revient** pour les appareils (PC de Callelongue, distributeur…) |
+| 2 bis | Amphi Mont Ventoux | — | l'énigme résolue | Le joueur choisit « Allumer la lumière » ou « Laisser éteint ». S'il laisse éteint, il pourra encore allumer plus tard en rouvrant le boîtier | — | Lumière : plus besoin du flash… mais on lui annonce que **le gardien est là et commence sa ronde**. Éteint : il garde le flash et le gardien n'est pas mentionné |
+| 3 | Callelongue | Algorithmique / code | le courant + le mot de passe | PC (objet 1) : `CERCLE26`, puis dérouler le programme : 3 → 5 → (5 ≤ 6 donc × 2) 10 → 10 − 4 = 6 → (pair donc / 2) 3 | **3** | L'imprimante (objet 2, il faut cliquer dessus) donne les durées des tâches |
+| 4 | Ste Victoire | Gestion de projet | les durées | Planning (objet 1) puis coffre (objet 2, « Chemin critique ») : A(1) → B(3) → D(4) = 8 jours | **8** | Une clé (celle du frigo) |
+| 5 | Point repas / Garlaban | Ordre du code | la clé du coffre | Frigo (objet 1) : on essaie ses clés (« Essayer une clé » : celle du casier ne rentre pas ; « Essayer l'autre clé » : celle du coffre ouvre). Énigme du repas : pair = fille, impair = garçon, nombre = âge. Plus jeune garçon (3) en deuxième, entre son grand frère (5) et une sœur ; les deux plus jeunes (2 et 3) côte à côte ; les deux sœurs fâchées (2 et 8) pas côte à côte → **2358**. Le lien chiffres = âges n'est pas affiché (indice H n°2) | Sormiou, Callelongue, Ventoux, Ste Victoire | L'ordre du code |
+| Fin | Porte de sortie (couloir, à gauche) | — | les 4 chiffres + l'ordre | Pavé numérique à cliquer : **2 → 3 → 5 → 8 → A** (A = valider, B = quitter) | **2358** | L'évasion |
 
 **Parcours de la partie parfaite :** Sormiou → Mont Ventoux → Callelongue → Ste Victoire → Garlaban → Sortie.
 
 **Embranchements :**
-- **Au début, le courant est coupé** : les salles sont noires et seul le flash du téléphone (qui suit la souris) éclaire un petit cercle. Tester la lampe du boîtier de l'amphi Mont Ventoux rétablit la lumière (facultatif : on peut finir dans le noir).
-- **Le retour du courant alerte le gardien** (si le joueur reste dans le noir, il ne se réveille pas) : il fait des rondes jusqu'au matin. Il marche au hasard dans tout le couloir pendant ~40 s, se repose ~30 s dans son local, puis repart. Ses rondes continuent pendant que le joueur est dans une salle (un bandeau le signale). Le cercle de sa lampe torche est visible : **si le joueur y entre, c'est perdu** (fin « Attrapé »).
-- **Salle de détente** (facultatif) : le carnet du gardien, sous un coussin, rend le prochain indice gratuit.
+- **Au début, le courant est coupé** : les salles sont noires et seul le flash du téléphone (qui suit la souris) éclaire un petit cercle. Résoudre le boîtier de l'amphi Mont Ventoux rétablit le courant des appareils. Le joueur choisit ensuite d'allumer la lumière ou de continuer au flash.
+- **Allumer la lumière alerte le gardien** (s'il reste dans le noir, le gardien ne vient jamais et n'est jamais mentionné). Le gardien fait des rondes jusqu'au matin : il marche au hasard dans tout le couloir pendant ~40 s, se repose ~30 s dans son local, puis repart. Ses rondes continuent pendant que le joueur est dans une salle (un bandeau le signale). Le cercle de sa lampe torche est visible : **si le joueur y entre, c'est perdu** (fin « Attrapé »).
+- **Équipements qui font perdre du temps** (aucun n'est utile) : pouf (Sormiou, +20 min), puzzle (Ste Victoire, +10 min), baby-foot (+10 min) à Garlaban. Avec le courant seulement (même lumière éteinte) : PC du fond (Callelongue, +10 min), borne d'arcade (+15 min) et distributeur (+8 min) à Garlaban.
+- **Salle de détente** (facultatif) : un vieux carnet, sous un coussin, rend le prochain indice gratuit.
+- **Indices** : touche H. Les indices déjà lus restent consultables gratuitement, et les indices restent disponibles même quand l'énigme de la salle est finie.
 - **Fenêtre de Garlaban** : sortie anticipée sans le code → fin « Évasion ratée » (échec).
 
 **Fins possibles :** évasion réussie (code correct), évasion ratée (fenêtre), attrapé (lampe du gardien), game over (9h00).
@@ -120,7 +123,7 @@ Chaque push sur `main` déploie automatiquement sur GitHub Pages (`.github/workf
 ## 👥 Équipe
 
 | Membre | Rôle |
-
+|---|---|
 | Rayane | Chef de projet |
 | Nassim | Game designer & scénariste |
 | Ilian | Développeur |
