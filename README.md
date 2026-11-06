@@ -9,7 +9,7 @@ Il a jusqu'à **9h00** (environ 20 minutes réelles) pour trouver le code de la 
 
 URL publique : https://nuit-blanche-g4.vercel.app/
 
-Aucune installation nécessaire : un navigateur récent (Chrome, Firefox, Edge, Safari), sur ordinateur ou mobile.
+Aucune installation nécessaire : un navigateur récent (Chrome, Firefox, Edge, Safari), sur ordinateur ou mobile. Sur mobile de préférence sur chrome.
 
 Lancer en local (solution de secours)
 
@@ -91,6 +91,8 @@ Le jeu se joue aussi sur téléphone et tablette, **en mode paysage**. En portra
 ## Mode 2 joueurs (en ligne)
 
 Menu → **Jouer à 2 (en ligne)**. Chacun joue sur son ordinateur. Le premier clique « Créer une partie » et donne le **code à 5 caractères** affiché ; le second clique « Rejoindre avec un code ». Il faut une connexion internet : le serveur public gratuit de PeerJS sert seulement à mettre les deux navigateurs en relation, ensuite ils communiquent en direct (WebRTC).
+
+**Important : pour jouer à 2, les deux PC doivent être connectés à la même connexion internet** (par exemple le partage de connexion d'un même téléphone). **Le wifi de l'école ne fonctionne pas** : il bloque et isole les PC les uns des autres, ce qui empêche les deux ordinateurs de se connecter entre eux. Dans ce cas, le jeu affiche un message d'erreur au bout de quelques secondes.
 
 - **Rôles** : le créateur est le **Technicien**. Lui seul ouvre, tape les codes et manipule les appareils : casier, boîtier électrique, clavier du PC, coffre, réponse du frigo. L'invité est l'**Enquêteur**. Lui seul lit les documents : tableaux, mémos, post-it jaunes, imprimante, planning, programme du PC, mot du frigo. L'icône du rôle est affichée sur l'étiquette de chaque objet. Ils doivent donc se parler (à côté, ou en vocal) : l'un lit, l'autre agit.
 - **Ensemble** : chacun voit le personnage de l'autre (avec le skin qu'il a choisi) dans le couloir et dans les salles. Dans une salle sombre, le flash du coéquipier éclaire aussi. Les objets, chiffres, indices, erreurs et l'horloge sont communs.
