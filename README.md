@@ -119,6 +119,8 @@ REGISTRE_IA.md       usage de l'IA
 
 ## Déploiement
 
+Le jeu en ligne est hébergé sur Vercel : https://nuit-blanche-g4.vercel.app/
+
 Chaque push sur `main` déploie automatiquement sur GitHub Pages (`.github/workflows/deploy.yml`).
 À faire une fois : *Settings → Pages → Source : GitHub Actions*.
 
