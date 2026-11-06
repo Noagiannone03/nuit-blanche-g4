@@ -4,7 +4,7 @@ import { openDialog, closeDialog, isDialogOpen } from '../ui/dialog.js'; // outi
 import { loadBoard } from '../state/leaderboard.js'; // outil pour lire le classement enregistré
 // on récupère couleurs, polices et outils de dessin
 import { C, FONT_TITLE, FONT_HAND, txt, drawChalkboard, chalkButton } from '../ui/theme.js';
-import { setAmbience, toggleMute, isMuted } from '../audio/sound.js'; // on récupère les outils pour le son
+import { setAmbience, toggleMute, isMuted, playMusic, stopMusic } from '../audio/sound.js'; // on récupère les outils pour le son
 import { net, ROLES, hostGame, joinGame, leave } from '../net/multiplayer.js'; // on récupère les outils du mode à 2 joueurs
 import { createCharacter, drawPreview } from '../art/characters.js'; // outils pour fabriquer et dessiner un personnage
 import { SKIN_OPTIONS, loadSkin, saveSkin, paletteFromSkin } from '../art/skins.js'; // outils pour choisir l'apparence (skin) de l'élève
@@ -19,6 +19,8 @@ export class MenuScene extends Phaser.Scene { // on crée la scène du menu (sc�
   create() { // create() se lance une fois quand le menu s'affiche
     const { width, height } = this.scale; // on récupère la largeur et la hauteur de l'écran
     setAmbience(null); // on coupe la musique de fond
+    playMusic(); // on lance la musique de l'écran d'accueil (elle démarre au premier clic ou à la première touche)
+    this.events.once('shutdown', () => stopMusic()); // quand on quitte le menu, la musique s'arrête en fondu
     leave(); // on revient d'une partie à 2 : on coupe la connexion
     this.cameras.main.setBackgroundColor(C.wall); // couleur du fond derrière le tableau
     drawChalkboard(this, 30, 24, width - 60, height - 80); // on dessine le tableau noir

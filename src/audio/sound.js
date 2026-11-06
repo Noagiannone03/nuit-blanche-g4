@@ -309,3 +309,112 @@ export function setAmbience(name) { // fonction qui change le son de fond
   nodes.forEach((n) => n.start()); // on lance tous les sons de la liste
   ambience = { name, gain, nodes }; // on retient l'ambiance qui joue maintenant
 }
+
+// ---------- Musique de l'écran d'accueil ----------
+// Une petite berceuse de boîte à musique, un peu mystérieuse (la mineur), avec le tic-tac d'une horloge :
+// l'école la nuit. Tout est joué par le code, note après note, en boucle.
+
+const BPM = 84; // vitesse : 84 temps par minute
+const BEAT = 60 / BPM; // durée d'un temps, en secondes
+const note = (name) => { // transforme un nom de note (« A4 », « G#5 ») en fréquence
+  const [, letter, sharp, octave] = name.match(/^([A-G])(#?)(\d)$/); // on découpe : lettre, dièse, octave
+  const steps = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[letter] + (sharp ? 1 : 0); // écart avec le « la »
+  return 440 * 2 ** (steps / 12 + (octave - 4)); // 440 Hz = le « la » ; chaque demi-ton multiplie par 1,06
+};
+
+// 4 accords qui tournent : la mineur, fa, do, mi (le mi donne un petit suspense avant de reboucler)
+const CHORDS = ['A2', 'F2', 'C3', 'E2']; // la note grave de chaque mesure
+// 1re moitié : des arpèges de boîte à musique (8 notes par mesure)
+const ARPEGGIOS = [
+  ['A4', 'E5', 'A5', 'E5', 'C6', 'E5', 'B5', 'E5'], // mesure de la mineur
+  ['A4', 'F5', 'A5', 'F5', 'C6', 'F5', 'A5', 'F5'], // mesure de fa
+  ['G4', 'E5', 'G5', 'E5', 'C6', 'E5', 'G5', 'E5'], // mesure de do
+  ['G#4', 'E5', 'G#5', 'E5', 'B5', 'E5', 'D6', 'B5'], // mesure de mi
+];
+// 2e moitié : une mélodie plus chantante, posée sur les mêmes accords ([note, durée en temps])
+const MELODY = [
+  [['C6', 2], ['B5', 1], ['A5', 1]], // sur la mineur
+  [['A5', 2], ['G5', 1], ['F5', 1]], // sur fa
+  [['E5', 2], ['G5', 1], ['C6', 1]], // sur do
+  [['B5', 3], ['G#5', 1]], // sur mi
+];
+
+let music = null; // la musique en cours : { gain, timer, next, step }
+
+/** Une note de boîte à musique : un son doux qui s'éteint vite, plus une petite note aiguë par-dessus. */
+function musicBox(freq, time, vol, out) { // joue une note de boîte à musique
+  const delay = Math.max(0, time - ctx.currentTime); // dans combien de temps la jouer
+  tone(freq, 1.4, { type: 'triangle', vol, delay, attack: 0.004, out }); // la note principale
+  tone(freq * 2, 0.5, { type: 'sine', vol: vol * 0.3, delay, attack: 0.004, out }); // l'harmonique aiguë (le côté « métal »)
+}
+
+/** Joue une mesure entière (4 temps) qui commence à `time`. */
+function playBar(bar, time, out) { // joue la mesure numéro `bar`
+  const chord = bar % 4; // quel accord (0 à 3)
+  const second = bar % 8 >= 4; // vrai pendant la 2e moitié du morceau
+  const delay = Math.max(0, time - ctx.currentTime); // dans combien de temps commence la mesure
+  // la basse : une note grave et douce qui tient toute la mesure, plus sa quinte
+  tone(note(CHORDS[chord]), BEAT * 4, { type: 'sine', vol: 0.09, delay, attack: 0.25, out }); // la note grave
+  tone(note(CHORDS[chord]) * 1.5, BEAT * 4, { type: 'sine', vol: 0.03, delay, attack: 0.4, out }); // la quinte, pour remplir
+  // l'arpège : plus discret pendant la 2e moitié, pour laisser chanter la mélodie
+  ARPEGGIOS[chord].forEach((n, i) => musicBox(note(n), time + (i * BEAT) / 2, second ? 0.025 : 0.05, out)); // 8 notes par mesure
+  if (second) { // pendant la 2e moitié, on ajoute la mélodie
+    let beat = 0; // compteur de temps dans la mesure
+    for (const [n, len] of MELODY[chord]) { // pour chaque note de la mélodie
+      musicBox(note(n), time + beat * BEAT, 0.07, out); // on la joue au bon moment
+      beat += len; // on avance du nombre de temps de la note
+    }
+  }
+  // le tic-tac de l'horloge, sur chaque temps
+  for (let b = 0; b < 4; b++) { // pour les 4 temps de la mesure
+    noise(0.015, { freq: b % 2 ? 2400 : 3200, filter: 'bandpass', q: 8, vol: 0.025, delay: delay + b * BEAT, out }); // petit « tic » ou « tac »
+  }
+  // tout au début du morceau : un coup de cloche grave, comme minuit qui sonne
+  if (bar % 8 === 0) tone(note('A2'), 3, { type: 'sine', vol: 0.08, delay, attack: 0.01, out }); // la cloche
+}
+
+/** Lance la musique d'accueil (rien ne se passe si elle joue déjà). */
+export function playMusic() { // fonction qui démarre la musique
+  if (music || !audio()) return; // déjà en route, ou pas de son : on arrête
+  const gain = ctx.createGain(); // le volume de la musique
+  gain.gain.setValueAtTime(0, ctx.currentTime); // elle commence en silence
+  gain.gain.setTargetAtTime(0.9, ctx.currentTime, 1); // puis monte doucement
+  // un petit écho, pour que la boîte à musique résonne comme dans un grand couloir vide
+  const echo = ctx.createDelay(); // un retard (écho)
+  echo.delayTime.value = BEAT * 0.75; // l'écho revient un peu après la note
+  const feedback = ctx.createGain(); // combien d'écho revient à chaque fois
+  feedback.gain.value = 0.3; // 30 % : l'écho s'éteint vite
+  const wet = ctx.createGain(); // volume de l'écho
+  wet.gain.value = 0.35; // l'écho est plus faible que la note
+  gain.connect(master); // la musique va vers le volume général
+  gain.connect(echo); // et aussi vers l'écho
+  echo.connect(feedback).connect(echo); // l'écho se répète lui-même
+  echo.connect(wet).connect(master); // et on l'entend
+  music = { gain, echo, next: ctx.currentTime + 0.2, bar: 0, timer: null }; // on retient l'état de la musique
+  // toutes les 50 ms, on prépare les mesures qui arrivent bientôt
+  music.timer = setInterval(() => { // boucle qui programme la suite
+    if (ctx.state !== 'running') { // son pas encore autorisé (pas de clic) : on attend
+      music.next = ctx.currentTime + 0.2; // on repousse le départ
+      return; // et on ne joue rien
+    }
+    while (music.next < ctx.currentTime + 0.3) { // tant qu'une mesure doit commencer bientôt…
+      playBar(music.bar, music.next, gain); // on la programme
+      music.next += BEAT * 4; // la suivante commence 4 temps plus tard
+      music.bar += 1; // et on passe à la mesure suivante
+    }
+  }, 50); // on vérifie toutes les 50 millisecondes
+}
+
+/** Arrête la musique en fondu. */
+export function stopMusic() { // fonction qui coupe la musique
+  if (!music) return; // pas de musique : rien à faire
+  const { gain, echo, timer } = music; // on récupère ses morceaux
+  clearInterval(timer); // on arrête de programmer de nouvelles notes
+  gain.gain.cancelScheduledValues(ctx.currentTime); // on annule les changements de volume prévus
+  gain.gain.setTargetAtTime(0, ctx.currentTime, 0.4); // on baisse le volume en douceur
+  setTimeout(() => { // un peu plus tard…
+    gain.disconnect(); // on débranche la musique
+    echo.disconnect(); // et son écho
+  }, 2500); // après 2,5 secondes
+  music = null; // plus de musique en cours
+}
