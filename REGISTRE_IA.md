@@ -28,6 +28,8 @@
 
 Pour que chaque membre puisse expliquer le code, nous avons fait ajouter un commentaire en français simple sur chaque ligne.
 
+**Comment le travail arrivait sur GitHub.** Nous donnions les consignes, nous testions le jeu, et quand le résultat nous convenait, nous demandions à Claude Code d'envoyer le travail. C'est lui qui faisait les commits et les envois (« push ») sur GitHub, avec le compte d'Ilian. Rien n'était envoyé sans notre accord. Le tout premier commit (`819e3fd`, le 02/11/2026) contient la mention « Co-Authored-By: Claude » : c'est pour ça que Claude apparaît dans la liste des contributeurs du dépôt GitHub.
+
 ## Détail des utilisations
 
 | Date | Membre | Outil | Demande de l'équipe (résumé) | Ce qui a été produit | Ce que l'équipe a vérifié / modifié | Fichiers concernés |
